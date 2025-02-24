@@ -32,6 +32,8 @@ export interface CustomerFormData {
   };
   paymentInfo: {
     iban: string;
+    bic: string;
+    bankName: string;
   };
   guid: string;
 }

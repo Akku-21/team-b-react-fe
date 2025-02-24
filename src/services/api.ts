@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Customer, ApiResponse } from '../types/customer';
+import { Customer, ApiResponse, CustomerFormData } from '../types/customer';
 
 const API_BASE_URL = '/api';
 
@@ -16,6 +16,13 @@ export const customerService = {
       throw error;
     }
   },
+
+  createCustomer: async (formData: CustomerFormData): Promise<void> => {
+      const response = await axios.post<ApiResponse<void>>(`${API_BASE_URL}/customers/`, { formData });
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to create customer');
+      }
+    },
 
   deleteCustomer: async (customerId: string): Promise<void> => {
     const response = await axios.delete<ApiResponse<void>>(`${API_BASE_URL}/customers/${customerId}`);

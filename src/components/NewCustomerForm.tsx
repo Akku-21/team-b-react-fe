@@ -13,9 +13,11 @@ import {
   Typography,
   Box,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { useMask } from "@react-input/mask";
+import dayjs from "dayjs";
 import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
-import { v4 as uuidv4 } from "uuid";
 
 interface NewCustomerFormProps {
   open: boolean;
@@ -57,6 +59,8 @@ const initialFormData: CustomerFormData = {
   },
   paymentInfo: {
     iban: "",
+    bic: "",
+    bankName: "",
   },
   guid: "",
 };
@@ -67,13 +71,17 @@ export default function NewCustomerForm({
   onSuccess,
 }: NewCustomerFormProps) {
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
+  const inputRef = useMask({
+    mask: "************",
+    replacement: { "*": /\d/ },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const dataToSubmit = {
         ...formData,
-        guid: uuidv4(),
+        guid: crypto.randomUUID(),
       };
       await customerService.createCustomer(dataToSubmit);
       onSuccess();
@@ -81,6 +89,11 @@ export default function NewCustomerForm({
     } catch (error) {
       console.error("Failed to create customer:", error);
     }
+  };
+
+  const formatNumber = (value: string) => {
+    const number = value.replace(/\D/g, "");
+    return new Intl.NumberFormat("de-DE").format(Number(number));
   };
 
   const handleChange = (
@@ -118,19 +131,30 @@ export default function NewCustomerForm({
           </Typography>
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
+              <DatePicker
                 label="Geburtsdatum"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={formData.driverInfo.dob}
-                onChange={(e) =>
-                  handleChange("driverInfo", "dob", e.target.value)
+                value={
+                  formData.driverInfo.dob
+                    ? dayjs(formData.driverInfo.dob)
+                    : null
                 }
+                onChange={(newValue) =>
+                  handleChange(
+                    "driverInfo",
+                    "dob",
+                    newValue ? newValue.format("YYYY-MM-DD") : "",
+                  )
+                }
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    size: "small",
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
+              <FormControl fullWidth size="small">
                 <InputLabel>Familienstand</InputLabel>
                 <Select
                   value={formData.driverInfo.maritalStatus}
@@ -146,15 +170,26 @@ export default function NewCustomerForm({
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
+              <DatePicker
                 label="Führerscheindatum"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={formData.driverInfo.licenseNumber}
-                onChange={(e) =>
-                  handleChange("driverInfo", "licenseNumber", e.target.value)
+                value={
+                  formData.driverInfo.licenseNumber
+                    ? dayjs(formData.driverInfo.licenseNumber)
+                    : null
                 }
+                onChange={(newValue) =>
+                  handleChange(
+                    "driverInfo",
+                    "licenseNumber",
+                    newValue ? newValue.format("YYYY-MM-DD") : "",
+                  )
+                }
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    size: "small",
+                  },
+                }}
               />
             </Grid>
           </Grid>
@@ -163,9 +198,10 @@ export default function NewCustomerForm({
             Adresse
           </Typography>
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={8}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Straße"
                 value={formData.personalData.street}
                 onChange={(e) =>
@@ -173,9 +209,10 @@ export default function NewCustomerForm({
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Hausnummer"
                 value={formData.personalData.houseNumber}
                 onChange={(e) =>
@@ -183,9 +220,10 @@ export default function NewCustomerForm({
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Postleitzahl"
                 value={formData.personalData.postalCode}
                 onChange={(e) =>
@@ -193,9 +231,10 @@ export default function NewCustomerForm({
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={8}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Ort"
                 value={formData.personalData.city}
                 onChange={(e) =>
@@ -212,6 +251,7 @@ export default function NewCustomerForm({
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
+                size="small"
                 label="HSN"
                 value={formData.vehicleData.hsnTsn.split(" ")[0] || ""}
                 onChange={(e) =>
@@ -226,6 +266,7 @@ export default function NewCustomerForm({
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
+                size="small"
                 label="TSN"
                 value={formData.vehicleData.hsnTsn.split(" ")[1] || ""}
                 onChange={(e) =>
@@ -240,6 +281,7 @@ export default function NewCustomerForm({
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
+                size="small"
                 label="Kennzeichen"
                 value={formData.vehicleData.licensePlate}
                 onChange={(e) =>
@@ -248,34 +290,51 @@ export default function NewCustomerForm({
               />
             </Grid>
             <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
+              <DatePicker
                 label="Erstzulassung"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={formData.vehicleData.firstRegistration}
-                onChange={(e) =>
+                value={
+                  formData.vehicleData.firstRegistration
+                    ? dayjs(formData.vehicleData.firstRegistration)
+                    : null
+                }
+                onChange={(newValue) =>
                   handleChange(
                     "vehicleData",
                     "firstRegistration",
-                    e.target.value,
+                    newValue ? newValue.format("YYYY-MM-DD") : "",
                   )
                 }
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    size: "small",
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
+                size="small"
                 label="Aktueller km-Stand"
                 value={formData.vehicleData.currentMileage}
-                onChange={(e) =>
-                  handleChange("vehicleData", "currentMileage", e.target.value)
-                }
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+                  handleChange(
+                    "vehicleData",
+                    "currentMileage",
+                    formatNumber(value),
+                  );
+                }}
+                inputProps={{
+                  inputMode: "numeric",
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
+                size="small"
                 label="Fahrzeugidentifikationsnummer"
                 value={formData.vehicleData.vin}
                 onChange={(e) =>
@@ -292,10 +351,33 @@ export default function NewCustomerForm({
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
+                size="small"
                 label="IBAN"
                 value={formData.paymentInfo.iban}
                 onChange={(e) =>
                   handleChange("paymentInfo", "iban", e.target.value)
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                size="small"
+                label="BIC"
+                value={formData.paymentInfo.bic}
+                onChange={(e) =>
+                  handleChange("paymentInfo", "bic", e.target.value)
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Geldinstitut"
+                value={formData.paymentInfo.bankName}
+                onChange={(e) =>
+                  handleChange("paymentInfo", "bankName", e.target.value)
                 }
               />
             </Grid>
