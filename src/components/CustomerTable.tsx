@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { format, isValid, parseISO } from "date-fns";
-import { LinkIcon } from "@heroicons/react/24/outline";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Customer } from "../types/customer";
 import { customerService } from "../services/api";
 import NewCustomerForm from "./NewCustomerForm";
@@ -93,6 +93,15 @@ export default function CustomerTable() {
     loadCustomers();
   };
 
+  const handleDelete = async (customerId: string) => {
+    try {
+      await customerService.deleteCustomer(customerId);
+      loadCustomers(); // Reload the list after deletion
+    } catch (error) {
+      console.error("Failed to delete customer:", error);
+    }
+  };
+
   return (
     <LayoutGroup>
       <Box className="p-6">
@@ -175,10 +184,11 @@ export default function CustomerTable() {
                       </TableCell>
                       <TableCell align="right">
                         <IconButton
+                          color="error"
+                          onClick={() => handleDelete(customer.customerId)}
                           size="small"
-                          className="text-gray-400 hover:text-gray-600"
                         >
-                          <LinkIcon className="h-5 w-5" />
+                          <DeleteIcon />
                         </IconButton>
                       </TableCell>
                     </motion.tr>
