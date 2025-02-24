@@ -3,6 +3,7 @@ import { format, isValid, parseISO } from "date-fns";
 import { LinkIcon } from "@heroicons/react/24/outline";
 import { Customer } from "../types/customer";
 import { customerService } from "../services/api";
+import NewCustomerForm from "./NewCustomerForm";
 import {
   Table,
   TableBody,
@@ -40,6 +41,7 @@ export default function CustomerTable() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
+  const [isNewCustomerFormOpen, setIsNewCustomerFormOpen] = useState(false);
   const rowsPerPage = 10;
 
   useEffect(() => {
@@ -87,6 +89,10 @@ export default function CustomerTable() {
     setPage(Math.min(Math.max(1, newPage), totalPages));
   };
 
+  const handleNewCustomerSuccess = () => {
+    loadCustomers();
+  };
+
   return (
     <LayoutGroup>
       <Box className="p-6">
@@ -97,6 +103,7 @@ export default function CustomerTable() {
           <Button
             variant="contained"
             startIcon={<span className="text-lg font-normal">+</span>}
+            onClick={() => setIsNewCustomerFormOpen(true)}
           >
             Neuer Kunde
           </Button>
@@ -231,6 +238,12 @@ export default function CustomerTable() {
             </Button>
           </Box>
         </motion.div>
+
+        <NewCustomerForm
+          open={isNewCustomerFormOpen}
+          onClose={() => setIsNewCustomerFormOpen(false)}
+          onSuccess={handleNewCustomerSuccess}
+        />
       </Box>
     </LayoutGroup>
   );
