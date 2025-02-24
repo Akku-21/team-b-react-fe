@@ -1,6 +1,6 @@
 import { Customer, ApiResponse, CustomerFormData } from '../types/customer';
 
-const API_BASE_URL = '/api/api';
+const API_BASE_URL = 'https://team-b-api-bun-drizzle-production.up.railway.app/api/api';
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
   const data: ApiResponse<T> = await response.json();
