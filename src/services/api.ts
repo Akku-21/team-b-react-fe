@@ -1,16 +1,20 @@
-import axios from 'axios';
 import { Customer, ApiResponse, CustomerFormData } from '../types/customer';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = '/api/api';
+
+const handleResponse = async <T>(response: Response): Promise<T> => {
+  const data: ApiResponse<T> = await response.json();
+  if (!data.success) {
+    throw new Error(data.message || 'API request failed');
+  }
+  return data.data as T;
+};
 
 export const customerService = {
   getCustomers: async (): Promise<Customer[]> => {
     try {
-      const response = await axios.get<ApiResponse<Customer[]>>(`${API_BASE_URL}/customers/`);
-      if (response.data.success && response.data.data) {
-        return response.data.data;
-      }
-      throw new Error(response.data.message || 'Failed to fetch customers');
+      const response = await fetch(`${API_BASE_URL}/customers/`);
+      return handleResponse<Customer[]>(response);
     } catch (error) {
       console.error('API Error:', error);
       throw error;
@@ -18,16 +22,20 @@ export const customerService = {
   },
 
   createCustomer: async (formData: CustomerFormData): Promise<void> => {
-      const response = await axios.post<ApiResponse<void>>(`${API_BASE_URL}/customers/`, { formData });
-      if (!response.data.success) {
-        throw new Error(response.data.message || 'Failed to create customer');
-      }
-    },
+    const response = await fetch(`${API_BASE_URL}/customers/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ formData }),
+    });
+    return handleResponse<void>(response);
+  },
 
   deleteCustomer: async (customerId: string): Promise<void> => {
-    const response = await axios.delete<ApiResponse<void>>(`${API_BASE_URL}/customers/${customerId}`);
-    if (!response.data.success) {
-      throw new Error(response.data.message || 'Failed to delete customer');
-    }
+    const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+      method: 'DELETE',
+    });
+    return handleResponse<void>(response);
   }
 }

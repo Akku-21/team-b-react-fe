@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://team-b-api-bun-drizzle-production.up.railway.app/api/',
+        target: 'https://team-b-api-bun-drizzle-production.up.railway.app',
         changeOrigin: true,
         secure: false,
         // rewrite: (path) => path.replace(/^\/be/, '')
