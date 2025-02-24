@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Customer, ApiResponse } from '../types/customer';
 
-const API_BASE_URL = 'be/api/api';
+const API_BASE_URL = '/api';
 
 export const customerService = {
   getCustomers: async (): Promise<Customer[]> => {

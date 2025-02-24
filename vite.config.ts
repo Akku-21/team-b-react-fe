@@ -5,11 +5,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/be': {
-        target: 'http://localhost:3200/api/api',
+      '/api': {
+        target: 'https://team-b-api-bun-drizzle-production.up.railway.app/api/',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/be/, '')
+        // rewrite: (path) => path.replace(/^\/be/, '')
       }
     }
   },
