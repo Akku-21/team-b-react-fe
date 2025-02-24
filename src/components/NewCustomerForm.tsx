@@ -14,10 +14,10 @@ import {
   Box,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { useMask } from "@react-input/mask";
 import dayjs from "dayjs";
 import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
+import { generateMockData } from "../utils/mockDataGenerator";
 
 interface NewCustomerFormProps {
   open: boolean;
@@ -71,10 +71,6 @@ export default function NewCustomerForm({
   onSuccess,
 }: NewCustomerFormProps) {
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
-  const inputRef = useMask({
-    mask: "************",
-    replacement: { "*": /\d/ },
-  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,10 +109,14 @@ export default function NewCustomerForm({
     });
   };
 
+  const fillMockData = () => {
+    setFormData(generateMockData());
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        <Typography variant="h5" component="h2">
+        <Typography variant="h5" component="div">
           Datenabfrage für Ihre Kfz-Versicherung
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -383,17 +383,30 @@ export default function NewCustomerForm({
             </Grid>
           </Grid>
 
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-            <Button onClick={onClose} sx={{ mr: 1 }}>
-              Abbrechen
-            </Button>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
             <Button
-              variant="contained"
-              type="submit"
-              sx={{ bgcolor: "black", "&:hover": { bgcolor: "#333" } }}
+              variant="outlined"
+              onClick={fillMockData}
+              sx={{
+                borderColor: "black",
+                color: "black",
+                "&:hover": { borderColor: "#333", color: "#333" },
+              }}
             >
-              Daten senden
+              Mock Form
             </Button>
+            <Box>
+              <Button onClick={onClose} sx={{ mr: 1 }}>
+                Abbrechen
+              </Button>
+              <Button
+                variant="contained"
+                type="submit"
+                sx={{ bgcolor: "black", "&:hover": { bgcolor: "#333" } }}
+              >
+                Daten senden
+              </Button>
+            </Box>
           </Box>
         </Box>
       </DialogContent>
