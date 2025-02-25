@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
   Grid,
-  Select,
   MenuItem,
   Typography,
   Box,
@@ -290,20 +289,23 @@ export default function NewCustomerForm({
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Select
+          <TextField
+            select
             fullWidth
             size="small"
+            label="Familienstand"
             value={formData.driverInfo.maritalStatus}
             onChange={(e) =>
               handleChange("driverInfo", "maritalStatus", e.target.value)
             }
-            displayEmpty
           >
-            <MenuItem value="">Familienstand</MenuItem>
+            <MenuItem disabled value="">
+              <em>Familienstand auswählen</em>
+            </MenuItem>
             <MenuItem value="Ledig">Ledig</MenuItem>
             <MenuItem value="Verheiratet">Verheiratet</MenuItem>
             <MenuItem value="Geschieden">Geschieden</MenuItem>
-          </Select>
+          </TextField>
         </Grid>
         <Grid item xs={12} sm={6}>
           <DatePicker
