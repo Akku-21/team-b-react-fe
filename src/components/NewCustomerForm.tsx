@@ -7,6 +7,7 @@ import {
   Typography,
   Box,
   CircularProgress,
+  Alert,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
@@ -169,9 +170,18 @@ export default function NewCustomerForm({
     return Object.keys(newErrors).length === 0;
   };
 
+  // Check if form has already been edited by customer
+  const alreadyEditedByCustomer = isPublic && formData.editedByCustomer;
+
   // Update handleSubmit to include validation and set editedByCustomer flag
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent submission if already edited by customer in public mode
+    if (alreadyEditedByCustomer) {
+      showSnackbar("Dieses Formular wurde bereits bearbeitet", "info");
+      return;
+    }
 
     if (!validateForm()) {
       showSnackbar("Bitte füllen Sie alle erforderlichen Felder aus", "error");
@@ -251,6 +261,14 @@ export default function NewCustomerForm({
 
   const formContent = (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+      {alreadyEditedByCustomer && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Vielen Dank! Sie haben dieses Formular bereits bearbeitet. Ein
+          Versicherungsberater wird sich in Kürze mit Ihnen in Verbindung
+          setzen.
+        </Alert>
+      )}
+
       <Typography variant="h6" gutterBottom>
         Persönliche Informationen
       </Typography>
@@ -564,20 +582,28 @@ export default function NewCustomerForm({
       </Grid>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-        <Button variant="outlined" onClick={fillMockData} sx={{}}>
-          Mock Form
-        </Button>
-        <Box>
+        {!isPublic && (
+          <Button variant="outlined" onClick={fillMockData}>
+            Mock Form
+          </Button>
+        )}
+        <Box sx={{ ml: "auto" }}>
           <Button
             variant="contained"
             type="submit"
-            disabled={isSubmitting || !formData.personalData.lastName.trim()}
+            disabled={
+              isSubmitting ||
+              !formData.personalData.lastName.trim() ||
+              alreadyEditedByCustomer
+            }
             sx={{
               minWidth: "120px",
             }}
           >
             {isSubmitting ? (
               <CircularProgress size={24} color="inherit" />
+            ) : alreadyEditedByCustomer ? (
+              "Bereits gesendet"
             ) : (
               "Daten senden"
             )}
