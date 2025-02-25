@@ -38,5 +38,15 @@ export const customerService = {
       method: 'DELETE',
     });
     return handleResponse<void>(response);
-  }
+  },
+
+  getCustomerById: async (customerId: string): Promise<Customer> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/customers/${customerId}`);
+      return handleResponse<Customer>(response);
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  },
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,16 +12,17 @@ import {
   Box,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import InputMask from "react-input-mask";
 import dayjs from "dayjs";
 import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
 import { generateMockData } from "../utils/mockDataGenerator";
 
 interface NewCustomerFormProps {
-  open: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
+  open?: boolean;
+  onClose?: () => void;
+  onSuccess?: () => void;
+  isPage?: boolean;
+  customerId?: string;
 }
 
 const initialFormData: CustomerFormData = {
@@ -65,8 +66,26 @@ export default function NewCustomerForm({
   open,
   onClose,
   onSuccess,
+  isPage = false,
+  customerId,
 }: NewCustomerFormProps) {
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
+
+  useEffect(() => {
+    if (customerId) {
+      loadCustomerData(customerId);
+    }
+  }, [customerId]);
+
+  const loadCustomerData = async (id: string) => {
+    try {
+      // Assuming you have an API endpoint to get customer by ID
+      const data = await customerService.getCustomerById(id);
+      setFormData(data.formData);
+    } catch (error) {
+      console.error("Failed to load customer data:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,8 +95,12 @@ export default function NewCustomerForm({
         guid: crypto.randomUUID(),
       };
       await customerService.createCustomer(dataToSubmit);
-      onSuccess();
-      onClose();
+      if (onSuccess) {
+        onSuccess();
+      }
+      if (onClose) {
+        onClose();
+      }
     } catch (error) {
       console.error("Failed to create customer:", error);
     }
@@ -104,8 +127,371 @@ export default function NewCustomerForm({
     setFormData(generateMockData());
   };
 
+  const formContent = (
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+      <Typography variant="h6" gutterBottom>
+        Persönliche Informationen
+      </Typography>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Vorname"
+            value={formData.personalData.firstName}
+            onChange={(e) =>
+              handleChange("personalData", "firstName", e.target.value)
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Nachname"
+            value={formData.personalData.lastName}
+            onChange={(e) =>
+              handleChange("personalData", "lastName", e.target.value)
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <DatePicker
+            label="Geburtsdatum"
+            value={
+              formData.driverInfo.dob
+                ? dayjs(formData.driverInfo.dob)
+                : null
+            }
+            onChange={(newValue) =>
+              handleChange(
+                "driverInfo",
+                "dob",
+                newValue ? newValue.format("YYYY-MM-DD") : "",
+              )
+            }
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                size: "small",
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Select
+            fullWidth
+            size="small"
+            value={formData.driverInfo.maritalStatus}
+            onChange={(e) =>
+              handleChange("driverInfo", "maritalStatus", e.target.value)
+            }
+            displayEmpty
+          >
+            <MenuItem value="">Familienstand</MenuItem>
+            <MenuItem value="Ledig">Ledig</MenuItem>
+            <MenuItem value="Verheiratet">Verheiratet</MenuItem>
+            <MenuItem value="Geschieden">Geschieden</MenuItem>
+          </Select>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <DatePicker
+            label="Führerscheindatum"
+            value={
+              formData.driverInfo.licenseNumber
+                ? dayjs(formData.driverInfo.licenseNumber)
+                : null
+            }
+            onChange={(newValue) =>
+              handleChange(
+                "driverInfo",
+                "licenseNumber",
+                newValue ? newValue.format("YYYY-MM-DD") : "",
+              )
+            }
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                size: "small",
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="E-Mail Adresse"
+            value={formData.personalData.email}
+            onChange={(e) =>
+              handleChange("driverInfo", "email", e.target.value)
+            }
+          />
+        </Grid>
+      </Grid>
+
+      <Typography variant="h6" gutterBottom>
+        Adresse
+      </Typography>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Straße"
+            value={formData.personalData.street}
+            onChange={(e) =>
+              handleChange("personalData", "street", e.target.value)
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Hausnummer"
+            value={formData.personalData.houseNumber}
+            onChange={(e) =>
+              handleChange("personalData", "houseNumber", e.target.value)
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Postleitzahl"
+            value={formData.personalData.postalCode}
+            onChange={(e) =>
+              handleChange("personalData", "postalCode", e.target.value)
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Ort"
+            value={formData.personalData.city}
+            onChange={(e) =>
+              handleChange("personalData", "city", e.target.value)
+            }
+          />
+        </Grid>
+      </Grid>
+
+      <Typography variant="h6" gutterBottom>
+        Fahrzeugdaten
+      </Typography>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="HSN"
+            value={formData.vehicleData.hsnTsn.split(" ")[0] || ""}
+            onChange={(e) =>
+              handleChange(
+                "vehicleData",
+                "hsnTsn",
+                `${e.target.value} ${formData.vehicleData.hsnTsn.split(" ")[1] || ""}`,
+              )
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="TSN"
+            value={formData.vehicleData.hsnTsn.split(" ")[1] || ""}
+            onChange={(e) =>
+              handleChange(
+                "vehicleData",
+                "hsnTsn",
+                `${formData.vehicleData.hsnTsn.split(" ")[0] || ""} ${e.target.value}`,
+              )
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Kennzeichen"
+            value={formData.vehicleData.licensePlate}
+            onChange={(e) =>
+              handleChange("vehicleData", "licensePlate", e.target.value)
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <DatePicker
+            label="Erstzulassung"
+            value={
+              formData.vehicleData.firstRegistration
+                ? dayjs(formData.vehicleData.firstRegistration)
+                : null
+            }
+            onChange={(newValue) =>
+              handleChange(
+                "vehicleData",
+                "firstRegistration",
+                newValue ? newValue.format("YYYY-MM-DD") : "",
+              )
+            }
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                size: "small",
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Aktueller km-Stand"
+            value={formData.vehicleData.currentMileage}
+            onChange={(e) =>
+              handleChange("vehicleData", "currentMileage", e.target.value)
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Fahrzeugidentifikationsnummer"
+            value={formData.vehicleData.vin}
+            onChange={(e) =>
+              handleChange("vehicleData", "vin", e.target.value)
+            }
+          />
+        </Grid>
+      </Grid>
+
+      <Typography variant="h6" gutterBottom>
+        Versicherungsinformationen
+      </Typography>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6}>
+          <DatePicker
+            label="Versicherungsbeginn"
+            value={
+              formData.insuranceInfo.startDate
+                ? dayjs(formData.insuranceInfo.startDate)
+                : null
+            }
+            onChange={(newValue) =>
+              handleChange(
+                "insuranceInfo",
+                "startDate",
+                newValue ? newValue.format("YYYY-MM-DD") : "",
+              )
+            }
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                size: "small",
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Bisherige Versicherung"
+            value={formData.insuranceInfo.previousInsurance}
+            onChange={(e) =>
+              handleChange(
+                "insuranceInfo",
+                "previousInsurance",
+                e.target.value,
+              )
+            }
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            size="small"
+            label="Bisherige Versicherungsnummer"
+            value={formData.insuranceInfo.previousInsuranceNumber}
+            onChange={(e) =>
+              handleChange(
+                "insuranceInfo",
+                "previousInsuranceNumber",
+                e.target.value,
+              )
+            }
+          />
+        </Grid>
+      </Grid>
+
+      <Typography variant="h6" gutterBottom>
+        Zahlungsinformation
+      </Typography>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            size="small"
+            label="IBAN"
+            value={formData.paymentInfo.iban}
+            onChange={(e) => handleChange("paymentInfo", "iban", e.target.value)}
+            inputProps={{
+              maxLength: 29,
+              pattern: "DE[0-9]{2} [0-9]{4} [0-9]{4} [0-9]{4} [0-9]{4} [0-9]{2}",
+            }}
+            placeholder="DE12 3456 7890 1234 5678 90"
+          />
+        </Grid>
+      </Grid>
+
+      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+        <Button
+          variant="outlined"
+          onClick={fillMockData}
+          sx={{
+            borderColor: "black",
+            color: "black",
+            "&:hover": { borderColor: "#333", color: "#333" },
+          }}
+        >
+          Mock Form
+        </Button>
+        <Box>
+          <Button onClick={onClose} sx={{ mr: 1 }}>
+            Abbrechen
+          </Button>
+          <Button
+            variant="contained"
+            type="submit"
+            sx={{ bgcolor: "black", "&:hover": { bgcolor: "#333" } }}
+          >
+            Daten senden
+          </Button>
+        </Box>
+      </Box>
+    </Box>
+  );
+
+  if (isPage) {
+    return (
+      <Box>
+        <Typography variant="h5" component="div" gutterBottom>
+          Kundendaten
+        </Typography>
+        {formContent}
+      </Box>
+    );
+  }
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open || false} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Typography variant="h5" component="div">
           Datenabfrage für Ihre Kfz-Versicherung
@@ -116,359 +502,7 @@ export default function NewCustomerForm({
         </Typography>
       </DialogTitle>
       <DialogContent>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Persönliche Informationen
-          </Typography>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Vorname"
-                value={formData.personalData.firstName}
-                onChange={(e) =>
-                  handleChange("personalData", "firstName", e.target.value)
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Nachname"
-                value={formData.personalData.lastName}
-                onChange={(e) =>
-                  handleChange("personalData", "lastName", e.target.value)
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Geburtsdatum"
-                value={
-                  formData.driverInfo.dob
-                    ? dayjs(formData.driverInfo.dob)
-                    : null
-                }
-                onChange={(newValue) =>
-                  handleChange(
-                    "driverInfo",
-                    "dob",
-                    newValue ? newValue.format("YYYY-MM-DD") : "",
-                  )
-                }
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    size: "small",
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Select
-                fullWidth
-                size="small"
-                value={formData.driverInfo.maritalStatus}
-                onChange={(e) =>
-                  handleChange("driverInfo", "maritalStatus", e.target.value)
-                }
-                displayEmpty
-              >
-                <MenuItem value="">Familienstand</MenuItem>
-                <MenuItem value="Ledig">Ledig</MenuItem>
-                <MenuItem value="Verheiratet">Verheiratet</MenuItem>
-                <MenuItem value="Geschieden">Geschieden</MenuItem>
-              </Select>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Führerscheindatum"
-                value={
-                  formData.driverInfo.licenseNumber
-                    ? dayjs(formData.driverInfo.licenseNumber)
-                    : null
-                }
-                onChange={(newValue) =>
-                  handleChange(
-                    "driverInfo",
-                    "licenseNumber",
-                    newValue ? newValue.format("YYYY-MM-DD") : "",
-                  )
-                }
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    size: "small",
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="E-Mail Adresse"
-                value={formData.personalData.email}
-                onChange={(e) =>
-                  handleChange("driverInfo", "email", e.target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-
-          <Typography variant="h6" gutterBottom>
-            Adresse
-          </Typography>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Straße"
-                value={formData.personalData.street}
-                onChange={(e) =>
-                  handleChange("personalData", "street", e.target.value)
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Hausnummer"
-                value={formData.personalData.houseNumber}
-                onChange={(e) =>
-                  handleChange("personalData", "houseNumber", e.target.value)
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Postleitzahl"
-                value={formData.personalData.postalCode}
-                onChange={(e) =>
-                  handleChange("personalData", "postalCode", e.target.value)
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Ort"
-                value={formData.personalData.city}
-                onChange={(e) =>
-                  handleChange("personalData", "city", e.target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-
-          <Typography variant="h6" gutterBottom>
-            Fahrzeugdaten
-          </Typography>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="HSN"
-                value={formData.vehicleData.hsnTsn.split(" ")[0] || ""}
-                onChange={(e) =>
-                  handleChange(
-                    "vehicleData",
-                    "hsnTsn",
-                    `${e.target.value} ${formData.vehicleData.hsnTsn.split(" ")[1] || ""}`,
-                  )
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="TSN"
-                value={formData.vehicleData.hsnTsn.split(" ")[1] || ""}
-                onChange={(e) =>
-                  handleChange(
-                    "vehicleData",
-                    "hsnTsn",
-                    `${formData.vehicleData.hsnTsn.split(" ")[0] || ""} ${e.target.value}`,
-                  )
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Kennzeichen"
-                value={formData.vehicleData.licensePlate}
-                onChange={(e) =>
-                  handleChange("vehicleData", "licensePlate", e.target.value)
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Erstzulassung"
-                value={
-                  formData.vehicleData.firstRegistration
-                    ? dayjs(formData.vehicleData.firstRegistration)
-                    : null
-                }
-                onChange={(newValue) =>
-                  handleChange(
-                    "vehicleData",
-                    "firstRegistration",
-                    newValue ? newValue.format("YYYY-MM-DD") : "",
-                  )
-                }
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    size: "small",
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Aktueller km-Stand"
-                value={formData.vehicleData.currentMileage}
-                onChange={(e) =>
-                  handleChange("vehicleData", "currentMileage", e.target.value)
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Fahrzeugidentifikationsnummer"
-                value={formData.vehicleData.vin}
-                onChange={(e) =>
-                  handleChange("vehicleData", "vin", e.target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-
-          <Typography variant="h6" gutterBottom>
-            Versicherungsinformationen
-          </Typography>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Versicherungsbeginn"
-                value={
-                  formData.insuranceInfo.startDate
-                    ? dayjs(formData.insuranceInfo.startDate)
-                    : null
-                }
-                onChange={(newValue) =>
-                  handleChange(
-                    "insuranceInfo",
-                    "startDate",
-                    newValue ? newValue.format("YYYY-MM-DD") : "",
-                  )
-                }
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    size: "small",
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Bisherige Versicherung"
-                value={formData.insuranceInfo.previousInsurance}
-                onChange={(e) =>
-                  handleChange(
-                    "insuranceInfo",
-                    "previousInsurance",
-                    e.target.value,
-                  )
-                }
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Bisherige Versicherungsnummer"
-                value={formData.insuranceInfo.previousInsuranceNumber}
-                onChange={(e) =>
-                  handleChange(
-                    "insuranceInfo",
-                    "previousInsuranceNumber",
-                    e.target.value,
-                  )
-                }
-              />
-            </Grid>
-          </Grid>
-
-          <Typography variant="h6" gutterBottom>
-            Zahlungsinformation
-          </Typography>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12}>
-              <InputMask
-                mask="DE99 9999 9999 9999 9999 99"
-                value={formData.paymentInfo.iban}
-                onChange={(e) =>
-                  handleChange("paymentInfo", "iban", e.target.value)
-                }
-              >
-                {(inputProps: any) => (
-                  <TextField
-                    {...inputProps}
-                    fullWidth
-                    size="small"
-                    label="IBAN"
-                  />
-                )}
-              </InputMask>
-            </Grid>
-          </Grid>
-
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-            <Button
-              variant="outlined"
-              onClick={fillMockData}
-              sx={{
-                borderColor: "black",
-                color: "black",
-                "&:hover": { borderColor: "#333", color: "#333" },
-              }}
-            >
-              Mock Form
-            </Button>
-            <Box>
-              <Button onClick={onClose} sx={{ mr: 1 }}>
-                Abbrechen
-              </Button>
-              <Button
-                variant="contained"
-                type="submit"
-                sx={{ bgcolor: "black", "&:hover": { bgcolor: "#333" } }}
-              >
-                Daten senden
-              </Button>
-            </Box>
-          </Box>
-        </Box>
+        {formContent}
       </DialogContent>
     </Dialog>
   );

@@ -22,10 +22,15 @@ import {
   InputAdornment,
   Pagination,
   TableSortLabel,
+  Tooltip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import ClearIcon from '@mui/icons-material/Clear';
+import { useNavigate } from 'react-router-dom';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import EmailIcon from '@mui/icons-material/Email';
 
 type SortField = "firstName" | "lastName" | "dob" | "email";
 type SortOrder = "asc" | "desc";
@@ -50,6 +55,7 @@ export default function CustomerTable() {
   const [sortField, setSortField] = useState<SortField>("firstName");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const rowsPerPage = 10;
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadCustomers();
@@ -89,8 +95,10 @@ export default function CustomerTable() {
 
   const sortCustomers = (customers: Customer[]) => {
     return [...customers].sort((a, b) => {
-      const [firstNameA, lastNameA] = a.formData.driverInfo.name.split(" ");
-      const [firstNameB, lastNameB] = b.formData.driverInfo.name.split(" ");
+      const firstNameA = a.formData?.personalData?.firstName || '';
+      const lastNameA = a.formData?.personalData?.lastName || '';
+      const firstNameB = b.formData?.personalData?.firstName || '';
+      const lastNameB = b.formData?.personalData?.lastName || '';
 
       let compareResult = 0;
       switch (sortField) {
@@ -101,13 +109,13 @@ export default function CustomerTable() {
           compareResult = lastNameA.localeCompare(lastNameB);
           break;
         case "dob":
-          compareResult = a.formData.driverInfo.dob.localeCompare(
-            b.formData.driverInfo.dob,
+          compareResult = (a.formData?.driverInfo?.dob || '').localeCompare(
+            b.formData?.driverInfo?.dob || ''
           );
           break;
         case "email":
-          compareResult = a.formData.personalData.email.localeCompare(
-            b.formData.personalData.email,
+          compareResult = (a.formData?.personalData?.email || '').localeCompare(
+            b.formData?.personalData?.email || ''
           );
           break;
       }
@@ -115,15 +123,17 @@ export default function CustomerTable() {
     });
   };
 
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.formData.driverInfo.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      customer.formData.personalData.email
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()),
-  );
+  const filteredCustomers = customers.filter((customer) => {
+    const firstName = customer.formData?.personalData?.firstName || '';
+    const lastName = customer.formData?.personalData?.lastName || '';
+    const fullName = `${firstName} ${lastName}`;
+    const email = customer.formData?.personalData?.email || '';
+    
+    return (
+      fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   const sortedCustomers = sortCustomers(filteredCustomers);
 
@@ -153,6 +163,22 @@ export default function CustomerTable() {
     }
   };
 
+  const handleCopyLink = (customerId: string) => {
+    const url = `${window.location.origin}/kundedaten/${customerId}`;
+    navigator.clipboard.writeText(url).then(
+      () => {
+        console.log('URL copied to clipboard');
+      },
+      (err) => {
+        console.error('Could not copy text: ', err);
+      }
+    );
+  };
+
+  const handleMailTo = (email: string) => {
+    window.location.href = `mailto:${email}`;
+  };
+
   return (
     <LayoutGroup>
       <Box className="p-6">
@@ -163,7 +189,7 @@ export default function CustomerTable() {
           <Button
             variant="contained"
             startIcon={<span className="text-lg font-normal">+</span>}
-            onClick={() => setIsNewCustomerFormOpen(true)}
+            onClick={() => navigate('/kundedaten/new')}
           >
             Neuer Kunde
           </Button>
@@ -177,6 +203,18 @@ export default function CustomerTable() {
               startAdornment: (
                 <InputAdornment position="start">
                   <SearchIcon className="text-gray-400" />
+                </InputAdornment>
+              ),
+              endAdornment: searchTerm && (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="clear search"
+                    onClick={() => setSearchTerm("")}
+                    edge="end"
+                    size="small"
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
                 </InputAdornment>
               ),
             }}
@@ -238,45 +276,71 @@ export default function CustomerTable() {
             </TableHead>
             <TableBody>
               <AnimatePresence mode="wait">
-                {paginatedCustomers.map((customer) => {
-                  const [firstName, lastName] =
-                    customer.formData.driverInfo.name.split(" ");
-                  return (
-                    <motion.tr
-                      key={customer.customerId}
-                      variants={tableRowVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      transition={{
-                        type: "spring",
-                        stiffness: 200,
-                        damping: 20,
-                        mass: 0.5,
-                      }}
-                      style={{ display: "table-row" }}
-                      layout
-                    >
-                      <TableCell>{firstName}</TableCell>
-                      <TableCell>{lastName}</TableCell>
-                      <TableCell>
-                        {formatDate(customer.formData.driverInfo.dob)}
-                      </TableCell>
-                      <TableCell>
-                        {customer.formData.personalData.email}
-                      </TableCell>
-                      <TableCell align="right">
+                {paginatedCustomers.map((customer) => (
+                  <motion.tr
+                    key={customer.customerId}
+                    onClick={() => navigate(`/kundedaten/${customer.customerId}`)}
+                    style={{ cursor: 'pointer' }}
+                    variants={tableRowVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    transition={{
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 20,
+                      mass: 0.5,
+                    }}
+                    layout
+                  >
+                    <TableCell>{customer.formData?.personalData?.firstName || ''}</TableCell>
+                    <TableCell>{customer.formData?.personalData?.lastName || ''}</TableCell>
+                    <TableCell>
+                      {formatDate(customer.formData?.driverInfo?.dob || '')}
+                    </TableCell>
+                    <TableCell>
+                      {customer.formData?.personalData?.email || ''}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Link kopieren">
                         <IconButton
-                          color="error"
-                          onClick={() => handleDelete(customer.customerId)}
+                          color="primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyLink(customer.customerId);
+                          }}
                           size="small"
+                          sx={{ mr: 1 }}
                         >
-                          <DeleteIcon />
+                          <ContentCopyIcon fontSize="small" />
                         </IconButton>
-                      </TableCell>
-                    </motion.tr>
-                  );
-                })}
+                      </Tooltip>
+                      <Tooltip title="E-Mail senden">
+                        <IconButton
+                          color="primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMailTo(customer.formData?.personalData?.email || '');
+                          }}
+                          size="small"
+                          sx={{ mr: 1 }}
+                        >
+                          <EmailIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <IconButton
+                        color="error"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(customer.customerId);
+                        }}
+                        size="small"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </motion.tr>
+                ))}
               </AnimatePresence>
             </TableBody>
           </Table>
