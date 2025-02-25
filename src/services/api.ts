@@ -1,6 +1,6 @@
 import { Customer, ApiResponse, CustomerFormData } from '../types/customer';
 
-const API_BASE_URL = 'https://team-b-api-bun-drizzle-production.up.railway.app/api/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
   const data: ApiResponse<T> = await response.json();
@@ -13,6 +13,7 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
 export const customerService = {
   getCustomers: async (): Promise<Customer[]> => {
     try {
+      console.log('getCustomers',`${API_BASE_URL}/customers/`)
       const response = await fetch(`${API_BASE_URL}/customers/`);
       return handleResponse<Customer[]>(response);
     } catch (error) {
