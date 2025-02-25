@@ -21,10 +21,14 @@ import {
   Box,
   InputAdornment,
   Pagination,
+  TableSortLabel,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+
+type SortField = "firstName" | "lastName" | "dob" | "email";
+type SortOrder = "asc" | "desc";
 
 const tableRowVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -43,11 +47,18 @@ export default function CustomerTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [isNewCustomerFormOpen, setIsNewCustomerFormOpen] = useState(false);
+  const [sortField, setSortField] = useState<SortField>("firstName");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const rowsPerPage = 10;
 
   useEffect(() => {
     loadCustomers();
   }, []);
+
+  // Reset page when search term changes
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
 
   const loadCustomers = async () => {
     try {
@@ -67,6 +78,43 @@ export default function CustomerTable() {
     }
   };
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
+  const sortCustomers = (customers: Customer[]) => {
+    return [...customers].sort((a, b) => {
+      const [firstNameA, lastNameA] = a.formData.driverInfo.name.split(" ");
+      const [firstNameB, lastNameB] = b.formData.driverInfo.name.split(" ");
+
+      let compareResult = 0;
+      switch (sortField) {
+        case "firstName":
+          compareResult = firstNameA.localeCompare(firstNameB);
+          break;
+        case "lastName":
+          compareResult = lastNameA.localeCompare(lastNameB);
+          break;
+        case "dob":
+          compareResult = a.formData.driverInfo.dob.localeCompare(
+            b.formData.driverInfo.dob,
+          );
+          break;
+        case "email":
+          compareResult = a.formData.personalData.email.localeCompare(
+            b.formData.personalData.email,
+          );
+          break;
+      }
+      return sortOrder === "asc" ? compareResult : -compareResult;
+    });
+  };
+
   const filteredCustomers = customers.filter(
     (customer) =>
       customer.formData.driverInfo.name
@@ -77,11 +125,10 @@ export default function CustomerTable() {
         .includes(searchTerm.toLowerCase()),
   );
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredCustomers.length / rowsPerPage),
-  );
-  const paginatedCustomers = filteredCustomers.slice(
+  const sortedCustomers = sortCustomers(filteredCustomers);
+
+  const totalPages = Math.ceil(sortedCustomers.length / rowsPerPage);
+  const paginatedCustomers = sortedCustomers.slice(
     (page - 1) * rowsPerPage,
     page * rowsPerPage,
   );
@@ -100,7 +147,7 @@ export default function CustomerTable() {
   const handleDelete = async (customerId: string) => {
     try {
       await customerService.deleteCustomer(customerId);
-      loadCustomers(); // Reload the list after deletion
+      loadCustomers();
     } catch (error) {
       console.error("Failed to delete customer:", error);
     }
@@ -150,10 +197,42 @@ export default function CustomerTable() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Vorname</TableCell>
-                <TableCell>Nachname</TableCell>
-                <TableCell>Geburtsdatum</TableCell>
-                <TableCell>Email</TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === "firstName"}
+                    direction={sortField === "firstName" ? sortOrder : "asc"}
+                    onClick={() => handleSort("firstName")}
+                  >
+                    Vorname
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === "lastName"}
+                    direction={sortField === "lastName" ? sortOrder : "asc"}
+                    onClick={() => handleSort("lastName")}
+                  >
+                    Nachname
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === "dob"}
+                    direction={sortField === "dob" ? sortOrder : "asc"}
+                    onClick={() => handleSort("dob")}
+                  >
+                    Geburtsdatum
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === "email"}
+                    direction={sortField === "email" ? sortOrder : "asc"}
+                    onClick={() => handleSort("email")}
+                  >
+                    Email
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell align="right">Aktionen</TableCell>
               </TableRow>
             </TableHead>
@@ -216,15 +295,16 @@ export default function CustomerTable() {
           }}
           className="flex justify-end items-center text-sm text-gray-600"
         >
-          <Box className="flex justify-between items-center ">
+          <Box className="flex justify-between items-center gap-4">
             <Typography variant="body2" className="text-gray-600">
-              Zeige {(page - 1) * rowsPerPage + 1}-
-              {Math.min(page * rowsPerPage, filteredCustomers.length)} von{" "}
-              {filteredCustomers.length} Einträgen
+              Zeige{" "}
+              {sortedCustomers.length > 0 ? (page - 1) * rowsPerPage + 1 : 0}-
+              {Math.min(page * rowsPerPage, sortedCustomers.length)} von{" "}
+              {sortedCustomers.length} Einträgen
             </Typography>
             <Pagination
               className="align-end"
-              count={5}
+              count={totalPages}
               page={page}
               onChange={handlePageChange}
               color="primary"
