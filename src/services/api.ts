@@ -49,4 +49,20 @@ export const customerService = {
       throw error;
     }
   },
+
+  updateCustomer: async (customerId: string, formData: CustomerFormData): Promise<void> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ formData }),
+      });
+      return handleResponse<void>(response);
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  },
 }

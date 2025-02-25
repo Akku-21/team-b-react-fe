@@ -123,12 +123,20 @@ export default function NewCustomerForm({
 
     setIsSubmitting(true);
     try {
-      const dataToSubmit = {
-        ...formData,
-        guid: crypto.randomUUID(),
-      };
-      await customerService.createCustomer(dataToSubmit);
-      showSnackbar('Kunde erfolgreich erstellt', 'success');
+      if (customerId && customerId !== 'new') {
+        // Update existing customer
+        await customerService.updateCustomer(customerId, formData);
+        showSnackbar('Kunde erfolgreich aktualisiert', 'success');
+      } else {
+        // Create new customer
+        const dataToSubmit = {
+          ...formData,
+          guid: crypto.randomUUID(),
+        };
+        await customerService.createCustomer(dataToSubmit);
+        showSnackbar('Kunde erfolgreich erstellt', 'success');
+      }
+
       if (onSuccess) {
         onSuccess();
       }
@@ -139,8 +147,13 @@ export default function NewCustomerForm({
         navigate('/');
       }
     } catch (error) {
-      console.error("Failed to create customer:", error);
-      showSnackbar('Fehler beim Erstellen des Kunden', 'error');
+      console.error("Failed to save customer:", error);
+      showSnackbar(
+        customerId && customerId !== 'new' 
+          ? 'Fehler beim Aktualisieren des Kunden' 
+          : 'Fehler beim Erstellen des Kunden', 
+        'error'
+      );
     } finally {
       setIsSubmitting(false);
     }
