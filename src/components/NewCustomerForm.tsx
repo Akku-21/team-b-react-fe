@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
 import { generateMockData } from "../utils/mockDataGenerator";
+import InputMask from "react-input-mask";
 
 interface NewCustomerFormProps {
   open?: boolean;
@@ -224,7 +225,7 @@ export default function NewCustomerForm({
             label="E-Mail Adresse"
             value={formData.personalData.email}
             onChange={(e) =>
-              handleChange("driverInfo", "email", e.target.value)
+              handleChange("personalData", "email", e.target.value)
             }
           />
         </Grid>
@@ -436,18 +437,23 @@ export default function NewCustomerForm({
       </Typography>
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12}>
-          <TextField
-            fullWidth
-            size="small"
-            label="IBAN"
+          <InputMask
+            mask="DE99 9999 9999 9999 9999 99"
             value={formData.paymentInfo.iban}
-            onChange={(e) => handleChange("paymentInfo", "iban", e.target.value)}
-            inputProps={{
-              maxLength: 29,
-              pattern: "DE[0-9]{2} [0-9]{4} [0-9]{4} [0-9]{4} [0-9]{4} [0-9]{2}",
-            }}
-            placeholder="DE12 3456 7890 1234 5678 90"
-          />
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleChange("paymentInfo", "iban", e.target.value)
+            }
+          >
+            {(inputProps: { onChange: any; value: string }) => (
+              <TextField
+                {...inputProps}
+                fullWidth
+                size="small"
+                label="IBAN"
+                placeholder="DE12 3456 7890 1234 5678 90"
+              />
+            )}
+          </InputMask>
         </Grid>
       </Grid>
 
