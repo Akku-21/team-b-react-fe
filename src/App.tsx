@@ -5,8 +5,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { theme } from "./theme";
 import CustomerTable from "./components/CustomerTable";
 import CustomerDataPage from "./pages/CustomerDataPage";
+import LoginPage from "./pages/LoginPage";
 import Header from "./components/Header";
 import { SnackbarProvider } from "./contexts/SnackbarContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -14,10 +16,30 @@ function App() {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <SnackbarProvider>
           <BrowserRouter>
-            <Header />
             <Routes>
-              <Route path="/" element={<CustomerTable />} />
-              <Route path="/kundedaten/:customerId" element={<CustomerDataPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <>
+                      <Header />
+                      <CustomerTable />
+                    </>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/kundedaten/:customerId"
+                element={
+                  <ProtectedRoute>
+                    <>
+                      <Header />
+                      <CustomerDataPage />
+                    </>
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </BrowserRouter>
         </SnackbarProvider>
