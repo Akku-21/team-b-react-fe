@@ -1,13 +1,45 @@
 import { createTheme } from '@mui/material/styles';
 
+declare module '@mui/material/styles' {
+  interface Palette {
+    insurance: {
+      main: string;
+      light: string;
+      dark: string;
+      contrastText: string;
+    };
+  }
+  interface PaletteOptions {
+    insurance: {
+      main: string;
+      light: string;
+      dark: string;
+      contrastText: string;
+    };
+  }
+}
+
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#000000',
+      main: '#7DD1DE',
+      light: '#9CDBE5',
+      dark: '#5CB7C4',
+      contrastText: '#ffffff',
+    },
+    insurance: {
+      main: '#7DD1DE',
+      light: '#9CDBE5',
+      dark: '#5CB7C4',
+      contrastText: '#ffffff',
     },
     background: {
       default: '#F8F9FA',
-      paper: '#FFFFFF',
+      paper: '#F8F9FA',
+    },
+    text: {
+      primary: '#4B5563',
+      secondary: '#6B7280',
     },
   },
   components: {
@@ -15,18 +47,40 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: '6px',
+          borderRadius: 4,
         },
         contained: {
-          backgroundColor: '#000',
-          color: '#fff',
+          backgroundColor: '#7DD1DE',
+          color: '#ffffff',
+          boxShadow: 'none',
           '&:hover': {
-            backgroundColor: '#333',
+            backgroundColor: '#5CB7C4',
+            boxShadow: 'none',
           },
         },
         outlined: {
-          borderColor: '#E5E7EB',
-          color: '#374151',
+          borderColor: '#7DD1DE',
+          color: '#7DD1DE',
+          '&:hover': {
+            backgroundColor: 'rgba(125, 209, 222, 0.04)',
+            borderColor: '#5CB7C4',
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          backgroundColor: '#F8F9FA',
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#7DD1DE',
+          color: '#ffffff',
         },
       },
     },
@@ -36,17 +90,40 @@ export const theme = createTheme({
       },
       styleOverrides: {
         root: {
-          backgroundColor: '#fff',
+          backgroundColor: '#FFFFFF',
+          '& .MuiInputBase-input': {
+            color: '#4B5563',
+          },
+          '& .MuiInputLabel-root': {
+            color: '#6B7280',
+          },
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: '#FFFFFF',
+          },
         },
       },
     },
-    MuiTableHead: {
+    MuiSelect: {
       styleOverrides: {
         root: {
-          backgroundColor: '#F9FAFB',
-          '& .MuiTableCell-root': {
-            color: '#6B7280',
-            fontWeight: 600,
+          backgroundColor: '#FFFFFF',
+        },
+      },
+    },
+    MuiAutocomplete: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: '#FFFFFF',
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          '&.Mui-selected': {
+            backgroundColor: '#7DD1DE',
+            color: '#ffffff',
           },
         },
       },
@@ -54,13 +131,43 @@ export const theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderBottom: '1px solid #E5E7EB',
-          padding: '12px 16px',
+          backgroundColor: '#F8F9FA',
+        },
+        head: {
+          backgroundColor: '#F0F2F5',
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#FFFFFF',
         },
       },
     },
   },
   typography: {
-    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 500,
+      color: '#4B5563',
+    },
+    h5: {
+      fontWeight: 500,
+      color: '#4B5563',
+    },
+    h6: {
+      fontWeight: 500,
+      color: '#4B5563',
+    },
+    body1: {
+      color: '#4B5563',
+    },
+    body2: {
+      color: '#6B7280',
+    },
+  },
+  shape: {
+    borderRadius: 8,
   },
 });

@@ -501,9 +501,6 @@ export default function NewCustomerForm({
           variant="outlined"
           onClick={fillMockData}
           sx={{
-            borderColor: "black",
-            color: "black",
-            "&:hover": { borderColor: "#333", color: "#333" },
           }}
         >
           Mock Form
@@ -514,8 +511,6 @@ export default function NewCustomerForm({
             type="submit"
             disabled={isSubmitting || !formData.personalData.lastName.trim()}
             sx={{ 
-              bgcolor: "black", 
-              "&:hover": { bgcolor: "#333" },
               minWidth: '120px'
             }}
           >

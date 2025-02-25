@@ -15,7 +15,7 @@ export default function CustomerDataPage() {
         <NewCustomerForm 
           customerId={customerId}
           onSuccess={() => {
-            navigate('/kundedaten');
+            navigate('/kundendaten');
          }}
         />
       </Paper>
