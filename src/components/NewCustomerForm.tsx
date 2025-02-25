@@ -13,23 +13,23 @@ import dayjs from "dayjs";
 import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
 import { generateMockData } from "../utils/mockDataGenerator";
-import { useSnackbar } from '../contexts/SnackbarContext';
-import { useMask } from '@react-input/mask';
+import { useSnackbar } from "../contexts/SnackbarContext";
+import { useMask } from "@react-input/mask";
 
 // Enhanced IBAN formatter function
 const formatIBAN = (value: string) => {
   // Remove all non-alphanumeric characters
-  const cleaned = value.replace(/[^a-zA-Z0-9]/g, '');
-  
+  const cleaned = value.replace(/[^a-zA-Z0-9]/g, "");
+
   // Format with spaces every 4 characters
-  let formatted = '';
+  let formatted = "";
   for (let i = 0; i < cleaned.length; i++) {
     if (i > 0 && i % 4 === 0) {
-      formatted += ' ';
+      formatted += " ";
     }
     formatted += cleaned[i];
   }
-  
+
   return formatted;
 };
 
@@ -80,6 +80,7 @@ const initialFormData: CustomerFormData = {
     iban: "",
   },
   guid: "",
+  editedByCustomer: false,
 };
 
 // Add this interface to define required fields
@@ -90,19 +91,20 @@ interface ValidationErrors {
 export default function NewCustomerForm({
   onSuccess,
   customerId,
+  isPublic,
 }: NewCustomerFormProps) {
   const { showSnackbar } = useSnackbar();
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
-  
+
   // Create refs for masked inputs
-  const ibanInputRef = useMask({ 
-    mask: 'XX99 9999 9999 9999 9999 99', 
-    replacement: { 
-      '9': /\d/,
-      'X': /[DE]/i  // Allow D and E characters (case insensitive)
-    } 
+  const ibanInputRef = useMask({
+    mask: "XX99 9999 9999 9999 9999 99",
+    replacement: {
+      "9": /\d/,
+      X: /[DE]/i, // Allow D and E characters (case insensitive)
+    },
   });
 
   useEffect(() => {
@@ -123,16 +125,16 @@ export default function NewCustomerForm({
     try {
       // Assuming you have an API endpoint to get customer by ID
       const data = await customerService.getCustomerById(id);
-      
+
       // Format IBAN before setting form data
       const formattedData = {
         ...data.formData,
         paymentInfo: {
           ...data.formData.paymentInfo,
-          iban: formatIBAN(data.formData.paymentInfo.iban || '')
-        }
+          iban: formatIBAN(data.formData.paymentInfo.iban || ""),
+        },
       };
-      
+
       setFormData(formattedData);
     } catch (error) {
       console.error("Failed to load customer data:", error);
@@ -142,7 +144,7 @@ export default function NewCustomerForm({
   // Handle IBAN paste event
   const handleIBANPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData('text');
+    const pastedText = e.clipboardData.getData("text");
     const formattedIBAN = formatIBAN(pastedText);
     handleChange("paymentInfo", "iban", formattedIBAN);
   };
@@ -152,41 +154,51 @@ export default function NewCustomerForm({
     const newErrors: ValidationErrors = {};
 
     if (!formData.personalData.lastName.trim()) {
-      newErrors.lastName = 'Nachname ist erforderlich';
+      newErrors.lastName = "Nachname ist erforderlich";
     }
-    
+
     // Add email validation
-    if (formData.personalData.email && !isValidEmail(formData.personalData.email)) {
-      newErrors.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein';
+    if (
+      formData.personalData.email &&
+      !isValidEmail(formData.personalData.email)
+    ) {
+      newErrors.email = "Bitte geben Sie eine gültige E-Mail-Adresse ein";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Update handleSubmit to include validation
+  // Update handleSubmit to include validation and set editedByCustomer flag
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
-      showSnackbar('Bitte füllen Sie alle erforderlichen Felder aus', 'error');
+      showSnackbar("Bitte füllen Sie alle erforderlichen Felder aus", "error");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      if (customerId && customerId !== 'new') {
+      // Create a copy of the form data with the editedByCustomer flag set if isPublic
+      const updatedFormData = {
+        ...formData,
+        // Set editedByCustomer to true if this is a public submission
+        editedByCustomer: isPublic ? true : formData.editedByCustomer,
+      };
+
+      if (customerId && customerId !== "new") {
         // Update existing customer
-        await customerService.updateCustomer(customerId, formData);
-        showSnackbar('Kunde erfolgreich aktualisiert', 'success');
+        await customerService.updateCustomer(customerId, updatedFormData);
+        showSnackbar("Kunde erfolgreich aktualisiert", "success");
       } else {
         // Create new customer
         const dataToSubmit = {
-          ...formData,
+          ...updatedFormData,
           guid: crypto.randomUUID(),
         };
         await customerService.createCustomer(dataToSubmit);
-        showSnackbar('Kunde erfolgreich erstellt', 'success');
+        showSnackbar("Kunde erfolgreich erstellt", "success");
       }
 
       if (onSuccess) {
@@ -195,10 +207,10 @@ export default function NewCustomerForm({
     } catch (error) {
       console.error("Failed to save customer:", error);
       showSnackbar(
-        customerId && customerId !== 'new' 
-          ? 'Fehler beim Aktualisieren des Kunden' 
-          : 'Fehler beim Erstellen des Kunden', 
-        'error'
+        customerId && customerId !== "new"
+          ? "Fehler beim Aktualisieren des Kunden"
+          : "Fehler beim Erstellen des Kunden",
+        "error"
       );
     } finally {
       setIsSubmitting(false);
@@ -208,7 +220,7 @@ export default function NewCustomerForm({
   const handleChange = (
     section: keyof CustomerFormData,
     field: string,
-    value: string | number,
+    value: string | number
   ) => {
     setFormData((prev) => {
       const sectionData = prev[section] as Record<string, string | number>;
@@ -273,11 +285,7 @@ export default function NewCustomerForm({
             label="Geburtsdatum"
             value={formatDateForDisplay(formData.driverInfo.dob)}
             onChange={(newValue) =>
-              handleChange(
-                "driverInfo",
-                "dob",
-                formatDateForStorage(newValue)
-              )
+              handleChange("driverInfo", "dob", formatDateForStorage(newValue))
             }
             format="DD.MM.YYYY"
             slotProps={{
@@ -310,9 +318,7 @@ export default function NewCustomerForm({
         <Grid item xs={12} sm={6}>
           <DatePicker
             label="Führerscheindatum"
-            value={
-              formatDateForDisplay(formData.driverInfo.licenseNumber)
-            }
+            value={formatDateForDisplay(formData.driverInfo.licenseNumber)}
             onChange={(newValue) =>
               handleChange(
                 "driverInfo",
@@ -408,7 +414,9 @@ export default function NewCustomerForm({
               handleChange(
                 "vehicleData",
                 "hsnTsn",
-                `${e.target.value} ${formData.vehicleData.hsnTsn.split(" ")[1] || ""}`,
+                `${e.target.value} ${
+                  formData.vehicleData.hsnTsn.split(" ")[1] || ""
+                }`
               )
             }
           />
@@ -423,7 +431,9 @@ export default function NewCustomerForm({
               handleChange(
                 "vehicleData",
                 "hsnTsn",
-                `${formData.vehicleData.hsnTsn.split(" ")[0] || ""} ${e.target.value}`,
+                `${formData.vehicleData.hsnTsn.split(" ")[0] || ""} ${
+                  e.target.value
+                }`
               )
             }
           />
@@ -476,9 +486,7 @@ export default function NewCustomerForm({
             size="small"
             label="Fahrzeugidentifikationsnummer"
             value={formData.vehicleData.vin}
-            onChange={(e) =>
-              handleChange("vehicleData", "vin", e.target.value)
-            }
+            onChange={(e) => handleChange("vehicleData", "vin", e.target.value)}
           />
         </Grid>
       </Grid>
@@ -514,11 +522,7 @@ export default function NewCustomerForm({
             label="Bisherige Versicherung"
             value={formData.insuranceInfo.previousInsurance}
             onChange={(e) =>
-              handleChange(
-                "insuranceInfo",
-                "previousInsurance",
-                e.target.value,
-              )
+              handleChange("insuranceInfo", "previousInsurance", e.target.value)
             }
           />
         </Grid>
@@ -532,7 +536,7 @@ export default function NewCustomerForm({
               handleChange(
                 "insuranceInfo",
                 "previousInsuranceNumber",
-                e.target.value,
+                e.target.value
               )
             }
           />
@@ -560,12 +564,7 @@ export default function NewCustomerForm({
       </Grid>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-        <Button
-          variant="outlined"
-          onClick={fillMockData}
-          sx={{
-          }}
-        >
+        <Button variant="outlined" onClick={fillMockData} sx={{}}>
           Mock Form
         </Button>
         <Box>
@@ -573,14 +572,14 @@ export default function NewCustomerForm({
             variant="contained"
             type="submit"
             disabled={isSubmitting || !formData.personalData.lastName.trim()}
-            sx={{ 
-              minWidth: '120px'
+            sx={{
+              minWidth: "120px",
             }}
           >
             {isSubmitting ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              'Daten senden'
+              "Daten senden"
             )}
           </Button>
         </Box>
@@ -588,10 +587,5 @@ export default function NewCustomerForm({
     </Box>
   );
 
-    return (
-      <Box>
-        {formContent}
-      </Box>
-    );
-  }
-
+  return <Box>{formContent}</Box>;
+}

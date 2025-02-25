@@ -25,13 +25,15 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import ClearIcon from '@mui/icons-material/Clear';
-import { useNavigate } from 'react-router-dom';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import EmailIcon from '@mui/icons-material/Email';
-import HoldDeleteButton from './HoldDeleteButton';
+import ClearIcon from "@mui/icons-material/Clear";
+import { useNavigate } from "react-router-dom";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import EmailIcon from "@mui/icons-material/Email";
+import HoldDeleteButton from "./HoldDeleteButton";
 import { generatePublicAccessLink } from "../utils/linkGenerator";
-import { useSnackbar } from '../contexts/SnackbarContext';
+import { useSnackbar } from "../contexts/SnackbarContext";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 type SortField = "firstName" | "lastName" | "dob" | "email";
 type SortOrder = "asc" | "desc";
@@ -96,10 +98,10 @@ export default function CustomerTable() {
 
   const sortCustomers = (customers: Customer[]) => {
     return [...customers].sort((a, b) => {
-      const firstNameA = a.formData?.personalData?.firstName || '';
-      const lastNameA = a.formData?.personalData?.lastName || '';
-      const firstNameB = b.formData?.personalData?.firstName || '';
-      const lastNameB = b.formData?.personalData?.lastName || '';
+      const firstNameA = a.formData?.personalData?.firstName || "";
+      const lastNameA = a.formData?.personalData?.lastName || "";
+      const firstNameB = b.formData?.personalData?.firstName || "";
+      const lastNameB = b.formData?.personalData?.lastName || "";
 
       let compareResult = 0;
       switch (sortField) {
@@ -110,13 +112,13 @@ export default function CustomerTable() {
           compareResult = lastNameA.localeCompare(lastNameB);
           break;
         case "dob":
-          compareResult = (a.formData?.driverInfo?.dob || '').localeCompare(
-            b.formData?.driverInfo?.dob || ''
+          compareResult = (a.formData?.driverInfo?.dob || "").localeCompare(
+            b.formData?.driverInfo?.dob || ""
           );
           break;
         case "email":
-          compareResult = (a.formData?.personalData?.email || '').localeCompare(
-            b.formData?.personalData?.email || ''
+          compareResult = (a.formData?.personalData?.email || "").localeCompare(
+            b.formData?.personalData?.email || ""
           );
           break;
       }
@@ -125,11 +127,11 @@ export default function CustomerTable() {
   };
 
   const filteredCustomers = customers.filter((customer) => {
-    const firstName = customer.formData?.personalData?.firstName || '';
-    const lastName = customer.formData?.personalData?.lastName || '';
+    const firstName = customer.formData?.personalData?.firstName || "";
+    const lastName = customer.formData?.personalData?.lastName || "";
     const fullName = `${firstName} ${lastName}`;
-    const email = customer.formData?.personalData?.email || '';
-    
+    const email = customer.formData?.personalData?.email || "";
+
     return (
       fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -141,16 +143,15 @@ export default function CustomerTable() {
   const totalPages = Math.ceil(sortedCustomers.length / rowsPerPage);
   const paginatedCustomers = sortedCustomers.slice(
     (page - 1) * rowsPerPage,
-    page * rowsPerPage,
+    page * rowsPerPage
   );
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
-    value: number,
+    value: number
   ) => {
     setPage(value);
   };
-
 
   const handleDelete = async (customerId: string) => {
     try {
@@ -162,14 +163,18 @@ export default function CustomerTable() {
   };
 
   const handleCopyLink = (customerId: string) => {
-    const publicLink = `${window.location.origin}${generatePublicAccessLink(customerId)}`;
+    const publicLink = `${window.location.origin}${generatePublicAccessLink(
+      customerId
+    )}`;
     navigator.clipboard.writeText(publicLink);
-    showSnackbar('Link wurde in die Zwischenablage kopiert', 'success');
+    showSnackbar("Link wurde in die Zwischenablage kopiert", "success");
   };
 
   const handleMailTo = (email: string, customerId: string) => {
-    const publicLink = `${window.location.origin}${generatePublicAccessLink(customerId)}`;
-    const subject = 'Ihre Versicherungsdaten';
+    const publicLink = `${window.location.origin}${generatePublicAccessLink(
+      customerId
+    )}`;
+    const subject = "Ihre Versicherungsdaten";
     const body = `
 Sehr geehrte Damen und Herren,
 
@@ -181,7 +186,9 @@ Mit freundlichen Grüßen
 Ihr Versicherungsteam
     `.trim();
 
-    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
     window.location.href = mailtoUrl;
   };
 
@@ -195,7 +202,7 @@ Ihr Versicherungsteam
           <Button
             variant="contained"
             startIcon={<span className="text-lg font-normal">+</span>}
-            onClick={() => navigate('/kundedaten/new')}
+            onClick={() => navigate("/kundedaten/new")}
           >
             Neuer Kunde
           </Button>
@@ -269,6 +276,7 @@ Ihr Versicherungsteam
                     Email
                   </TableSortLabel>
                 </TableCell>
+                <TableCell align="center">Vom Kunden bearbeitet</TableCell>
                 <TableCell align="right">Aktionen</TableCell>
               </TableRow>
             </TableHead>
@@ -277,8 +285,10 @@ Ihr Versicherungsteam
                 {paginatedCustomers.map((customer) => (
                   <motion.tr
                     key={customer.customerId}
-                    onClick={() => navigate(`/kundedaten/${customer.customerId}`)}
-                    style={{ cursor: 'pointer' }}
+                    onClick={() =>
+                      navigate(`/kundedaten/${customer.customerId}`)
+                    }
+                    style={{ cursor: "pointer" }}
                     variants={tableRowVariants}
                     initial="hidden"
                     animate="visible"
@@ -291,13 +301,24 @@ Ihr Versicherungsteam
                     }}
                     layout
                   >
-                    <TableCell>{customer.formData?.personalData?.firstName || ''}</TableCell>
-                    <TableCell>{customer.formData?.personalData?.lastName || ''}</TableCell>
                     <TableCell>
-                      {formatDate(customer.formData?.driverInfo?.dob || '')}
+                      {customer.formData?.personalData?.firstName || ""}
                     </TableCell>
                     <TableCell>
-                      {customer.formData?.personalData?.email || ''}
+                      {customer.formData?.personalData?.lastName || ""}
+                    </TableCell>
+                    <TableCell>
+                      {formatDate(customer.formData?.driverInfo?.dob || "")}
+                    </TableCell>
+                    <TableCell>
+                      {customer.formData?.personalData?.email || ""}
+                    </TableCell>
+                    <TableCell align="center">
+                      {customer.formData?.editedByCustomer ? (
+                        <CheckCircleIcon color="success" />
+                      ) : (
+                        <CancelIcon color="error" />
+                      )}
                     </TableCell>
                     <TableCell align="right">
                       <Tooltip title="Link kopieren">
@@ -319,7 +340,7 @@ Ihr Versicherungsteam
                           onClick={(e) => {
                             e.stopPropagation();
                             handleMailTo(
-                              customer.formData?.personalData?.email || '', 
+                              customer.formData?.personalData?.email || "",
                               customer.customerId
                             );
                           }}

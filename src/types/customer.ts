@@ -33,6 +33,7 @@ export interface CustomerFormData {
     iban: string;
   };
   guid: string;
+  editedByCustomer: boolean;
 }
 
 export interface Customer {

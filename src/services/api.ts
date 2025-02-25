@@ -13,7 +13,6 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
 export const customerService = {
   getCustomers: async (): Promise<Customer[]> => {
     try {
-      console.log('getCustomers',`${API_BASE_URL}/customers/`)
       const response = await fetch(`${API_BASE_URL}/customers/`);
       return handleResponse<Customer[]>(response);
     } catch (error) {
