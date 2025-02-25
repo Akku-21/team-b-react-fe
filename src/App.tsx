@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { theme } from "./theme";
 import CustomerTable from "./components/CustomerTable";
 import CustomerDataPage from "./pages/CustomerDataPage";
+import PublicCustomerPage from "./pages/PublicCustomerPage";
 import LoginPage from "./pages/LoginPage";
 import Layout from "./components/Layout";
 import { SnackbarProvider } from "./contexts/SnackbarContext";
@@ -18,6 +19,10 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
+              <Route 
+                path="/public/customer/:customerId/:accessToken" 
+                element={<PublicCustomerPage />} 
+              />
               <Route
                 path="/"
                 element={

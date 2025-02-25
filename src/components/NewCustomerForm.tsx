@@ -26,6 +26,7 @@ interface NewCustomerFormProps {
   onClose?: () => void;
   onSuccess?: () => void;
   isPage?: boolean;
+  isPublic?: boolean;
   customerId?: string;
 }
 
@@ -76,6 +77,7 @@ export default function NewCustomerForm({
   onClose,
   onSuccess,
   isPage = false,
+  isPublic = false,
   customerId,
 }: NewCustomerFormProps) {
   const navigate = useNavigate();
@@ -513,21 +515,25 @@ export default function NewCustomerForm({
       </Grid>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-        <Button
-          variant="outlined"
-          onClick={fillMockData}
-          sx={{
-            borderColor: "black",
-            color: "black",
-            "&:hover": { borderColor: "#333", color: "#333" },
-          }}
-        >
-          Mock Form
-        </Button>
-        <Box>
-          <Button onClick={onClose} sx={{ mr: 1 }}>
-            Abbrechen
+        {!isPublic && (
+          <Button
+            variant="outlined"
+            onClick={fillMockData}
+            sx={{
+              borderColor: "black",
+              color: "black",
+              "&:hover": { borderColor: "#333", color: "#333" },
+            }}
+          >
+            Mock Form
           </Button>
+        )}
+        <Box sx={{ ml: 'auto' }}>
+          {!isPublic && onClose && (
+            <Button onClick={onClose} sx={{ mr: 1 }}>
+              Abbrechen
+            </Button>
+          )}
           <Button
             variant="contained"
             type="submit"
@@ -541,7 +547,7 @@ export default function NewCustomerForm({
             {isSubmitting ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              'Daten senden'
+              'Daten speichern'
             )}
           </Button>
         </Box>
