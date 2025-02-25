@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import { List, ListItem, ListItemIcon, ListItemText, Paper, Tooltip } from '@mui/material';
+import { 
+  List, 
+  ListItemButton, 
+  ListItemIcon, 
+  ListItemText, 
+  Paper, 
+  Tooltip 
+} from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import SettingsIcon from '@mui/icons-material/Settings';
 import BarChartIcon from '@mui/icons-material/BarChart';
 
 const navigationItems = [
-  { path: '/', label: 'Dashboard', icon: <DashboardIcon /> },
-  { path: '/kunden', label: 'Kunden', icon: <PeopleIcon /> },
+  { path: '/kundendaten', label: 'Kunden', icon: <PeopleIcon /> },
   { path: '/statistiken', label: 'Statistiken', icon: <BarChartIcon /> },
   { path: '/einstellungen', label: 'Einstellungen', icon: <SettingsIcon /> },
 ];
@@ -51,10 +56,9 @@ export default function Navigation() {
             title={!isExpanded ? item.label : ''}
             placement="right"
           >
-            <ListItem
-              button
-              selected={location.pathname === item.path}
+            <ListItemButton
               onClick={() => navigate(item.path)}
+              selected={location.pathname.startsWith(item.path)}
               sx={{
                 mb: 1,
                 borderRadius: 1,
@@ -85,7 +89,7 @@ export default function Navigation() {
                   transition: `opacity ${TRANSITION_DURATION} ease`,
                 }}
               />
-            </ListItem>
+            </ListItemButton>
           </Tooltip>
         ))}
       </List>
