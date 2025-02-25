@@ -216,41 +216,6 @@ export default function CustomerTable() {
           }}
           className="flex justify-end items-center text-sm text-gray-600"
         >
-          {/* <Typography variant="body2">
-            Zeige {(page - 1) * rowsPerPage + 1}-
-            {Math.min(page * rowsPerPage, filteredCustomers.length)} von{" "}
-            {filteredCustomers.length} Einträgen
-          </Typography>
-          <Box className="flex items-center gap-2">
-            <Button
-              variant="text"
-              disabled={page === 1}
-              onClick={() => handlePageChange(page - 1)}
-            >
-              Zurück
-            </Button>
-            <Box className="flex gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (pageNum) => (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === page ? "contained" : "text"}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={pageNum === page ? "bg-black" : ""}
-                  >
-                    {pageNum}
-                  </Button>
-                ),
-              )}
-            </Box>
-            <Button
-              variant="text"
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages}
-            >
-              Weiter
-            </Button>
-          </Box> */}
           <Box className="flex justify-between items-center ">
             <Typography variant="body2" className="text-gray-600">
               Zeige {(page - 1) * rowsPerPage + 1}-
