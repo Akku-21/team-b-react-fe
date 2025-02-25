@@ -10,6 +10,7 @@ import {
   MenuItem,
   Typography,
   Box,
+  CircularProgress,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
@@ -17,6 +18,8 @@ import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
 import { generateMockData } from "../utils/mockDataGenerator";
 import InputMask from "react-input-mask";
+import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 interface NewCustomerFormProps {
   open?: boolean;
@@ -70,7 +73,10 @@ export default function NewCustomerForm({
   isPage = false,
   customerId,
 }: NewCustomerFormProps) {
+  const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (customerId) {
@@ -90,20 +96,28 @@ export default function NewCustomerForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const dataToSubmit = {
         ...formData,
         guid: crypto.randomUUID(),
       };
       await customerService.createCustomer(dataToSubmit);
+      showSnackbar('Kunde erfolgreich erstellt', 'success');
       if (onSuccess) {
         onSuccess();
       }
       if (onClose) {
         onClose();
       }
+      if (isPage) {
+        navigate('/');
+      }
     } catch (error) {
       console.error("Failed to create customer:", error);
+      showSnackbar('Fehler beim Erstellen des Kunden', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -476,9 +490,18 @@ export default function NewCustomerForm({
           <Button
             variant="contained"
             type="submit"
-            sx={{ bgcolor: "black", "&:hover": { bgcolor: "#333" } }}
+            disabled={isSubmitting}
+            sx={{ 
+              bgcolor: "black", 
+              "&:hover": { bgcolor: "#333" },
+              minWidth: '120px'
+            }}
           >
-            Daten senden
+            {isSubmitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              'Daten senden'
+            )}
           </Button>
         </Box>
       </Box>
