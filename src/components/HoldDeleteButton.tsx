@@ -26,52 +26,69 @@ export default function HoldDeleteButton({
     };
   }, []);
 
-  const startHolding = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Stop propagation to prevent row click
     e.stopPropagation();
-    setIsHolding(true);
+    
     startTime.current = Date.now();
-
+    setIsHolding(true);
+    setProgress(0);
+    
     progressInterval.current = window.setInterval(() => {
       const elapsed = Date.now() - (startTime.current || 0);
-      const newProgress = (elapsed / holdDuration) * 100;
+      const newProgress = Math.min(100, (elapsed / holdDuration) * 100);
+      setProgress(newProgress);
       
       if (newProgress >= 100) {
-        setProgress(100);
-        setIsHolding(false);
-        if (progressInterval.current) {
-          window.clearInterval(progressInterval.current);
-        }
-        onDelete();
-      } else {
-        setProgress(newProgress);
+        handleComplete();
       }
-    }, 10);
+    }, 50);
   };
 
-  const stopHolding = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleMouseUp = (e: React.MouseEvent) => {
+    // Stop propagation to prevent row click
     e.stopPropagation();
-    setIsHolding(false);
-    setProgress(0);
+    
     if (progressInterval.current) {
       window.clearInterval(progressInterval.current);
     }
+    setIsHolding(false);
+    setProgress(0);
+  };
+
+  const handleComplete = () => {
+    if (progressInterval.current) {
+      window.clearInterval(progressInterval.current);
+    }
+    setIsHolding(false);
+    setProgress(0);
+    onDelete();
   };
 
   const getColor = () => {
-    // Color transition from green to red based on progress
-    const hue = 120 - (progress * 120) / 100; // 120 is green, 0 is red in HSL
-    return `hsl(${hue}, 100%, 35%)`;
+    if (progress < 50) return '#FFD700'; // Gold
+    if (progress < 80) return '#FFA500'; // Orange
+    return '#FF0000'; // Red
+  };
+
+  // Add click handler to stop propagation
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   return (
     <IconButton
+      onClick={handleClick}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
       size={size}
-      onMouseDown={startHolding}
-      onMouseUp={stopHolding}
-      onMouseLeave={stopHolding}
-      onTouchStart={startHolding}
-      onTouchEnd={stopHolding}
-      sx={{ position: 'relative' }}
+      sx={{
+        color: isHolding ? getColor() : 'black',
+        transition: 'color 0.2s',
+        zIndex: 1,
+        position: 'relative'
+      }} 
     >
       <DeleteIcon 
         fontSize={size} 
