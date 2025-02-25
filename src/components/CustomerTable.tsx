@@ -227,14 +227,6 @@ Ihr Versicherungsteam
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Box className="flex items-center gap-4">
-            <Select size="small" defaultValue="" className="min-w-[180px]">
-              <MenuItem value="">Sortieren nach</MenuItem>
-            </Select>
-            <Button variant="outlined" startIcon={<FilterListIcon />}>
-              Filter
-            </Button>
-          </Box>
         </Box>
 
         <TableContainer component={Paper} className="mb-6 shadow-sm">

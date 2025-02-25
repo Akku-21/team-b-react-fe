@@ -227,6 +227,17 @@ export default function NewCustomerForm({
     setFormData(generateMockData());
   };
 
+  // Update date handling to use German format
+  const formatDateForDisplay = (dateString: string | null) => {
+    if (!dateString) return null;
+    return dayjs(dateString);
+  };
+
+  const formatDateForStorage = (date: dayjs.Dayjs | null) => {
+    if (!date) return "";
+    return date.format("YYYY-MM-DD");
+  };
+
   const formContent = (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
       <Typography variant="h6" gutterBottom>
@@ -261,18 +272,15 @@ export default function NewCustomerForm({
         <Grid item xs={12} sm={6}>
           <DatePicker
             label="Geburtsdatum"
-            value={
-              formData.driverInfo.dob
-                ? dayjs(formData.driverInfo.dob)
-                : null
-            }
+            value={formatDateForDisplay(formData.driverInfo.dob)}
             onChange={(newValue) =>
               handleChange(
                 "driverInfo",
                 "dob",
-                newValue ? newValue.format("YYYY-MM-DD") : "",
+                formatDateForStorage(newValue)
               )
             }
+            format="DD.MM.YYYY"
             slotProps={{
               textField: {
                 fullWidth: true,
@@ -301,17 +309,16 @@ export default function NewCustomerForm({
           <DatePicker
             label="Führerscheindatum"
             value={
-              formData.driverInfo.licenseNumber
-                ? dayjs(formData.driverInfo.licenseNumber)
-                : null
+              formatDateForDisplay(formData.driverInfo.licenseNumber)
             }
             onChange={(newValue) =>
               handleChange(
                 "driverInfo",
                 "licenseNumber",
-                newValue ? newValue.format("YYYY-MM-DD") : "",
+                formatDateForStorage(newValue)
               )
             }
+            format="DD.MM.YYYY"
             slotProps={{
               textField: {
                 fullWidth: true,
@@ -433,18 +440,15 @@ export default function NewCustomerForm({
         <Grid item xs={12} sm={6}>
           <DatePicker
             label="Erstzulassung"
-            value={
-              formData.vehicleData.firstRegistration
-                ? dayjs(formData.vehicleData.firstRegistration)
-                : null
-            }
+            value={formatDateForDisplay(formData.vehicleData.firstRegistration)}
             onChange={(newValue) =>
               handleChange(
                 "vehicleData",
                 "firstRegistration",
-                newValue ? newValue.format("YYYY-MM-DD") : "",
+                formatDateForStorage(newValue)
               )
             }
+            format="DD.MM.YYYY"
             slotProps={{
               textField: {
                 fullWidth: true,
@@ -484,18 +488,15 @@ export default function NewCustomerForm({
         <Grid item xs={12} sm={6}>
           <DatePicker
             label="Versicherungsbeginn"
-            value={
-              formData.insuranceInfo.startDate
-                ? dayjs(formData.insuranceInfo.startDate)
-                : null
-            }
+            value={formatDateForDisplay(formData.insuranceInfo.startDate)}
             onChange={(newValue) =>
               handleChange(
                 "insuranceInfo",
                 "startDate",
-                newValue ? newValue.format("YYYY-MM-DD") : "",
+                formatDateForStorage(newValue)
               )
             }
+            format="DD.MM.YYYY"
             slotProps={{
               textField: {
                 fullWidth: true,
