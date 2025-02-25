@@ -6,7 +6,7 @@ import { theme } from "./theme";
 import CustomerTable from "./components/CustomerTable";
 import CustomerDataPage from "./pages/CustomerDataPage";
 import LoginPage from "./pages/LoginPage";
-import Header from "./components/Header";
+import Layout from "./components/Layout";
 import { SnackbarProvider } from "./contexts/SnackbarContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -22,10 +22,19 @@ function App() {
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <>
-                      <Header />
+                    <Layout>
                       <CustomerTable />
-                    </>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/kunden"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <CustomerTable />
+                    </Layout>
                   </ProtectedRoute>
                 }
               />
@@ -33,10 +42,30 @@ function App() {
                 path="/kundedaten/:customerId"
                 element={
                   <ProtectedRoute>
-                    <>
-                      <Header />
+                    <Layout>
                       <CustomerDataPage />
-                    </>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Add placeholder routes for other navigation items */}
+              <Route
+                path="/statistiken"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <h1>Statistiken (Coming Soon)</h1>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/einstellungen"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <h1>Einstellungen (Coming Soon)</h1>
+                    </Layout>
                   </ProtectedRoute>
                 }
               />

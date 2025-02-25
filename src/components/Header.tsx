@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Typography, AppBar, Toolbar, Button } from "@mui/material";
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 
 interface HeaderProps {
   agentName?: string;
@@ -12,6 +13,7 @@ interface HeaderProps {
 export default function Header() {
   const { logout, user } = useAuthStore();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const handleLogout = () => {
     logout();
@@ -19,7 +21,7 @@ export default function Header() {
   };
 
   return (
-    <AppBar position="static" sx={{ bgcolor: 'black', mb: 2 }}>
+    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           Versicherungsportal
