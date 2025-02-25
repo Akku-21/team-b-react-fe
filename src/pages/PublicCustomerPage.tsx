@@ -33,8 +33,8 @@ export default function PublicCustomerPage() {
         </Typography>
         <NewCustomerForm 
           customerId={customerId}
-          isPage
           isPublic
+          open={true}
           onSuccess={() => {
             // Maybe show a success message
           }}

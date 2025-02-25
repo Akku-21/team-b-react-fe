@@ -32,6 +32,8 @@ import { useNavigate } from 'react-router-dom';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EmailIcon from '@mui/icons-material/Email';
 import HoldDeleteButton from './HoldDeleteButton';
+import { generatePublicAccessLink } from "../utils/linkGenerator";
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 type SortField = "firstName" | "lastName" | "dob" | "email";
 type SortOrder = "asc" | "desc";
@@ -57,6 +59,7 @@ export default function CustomerTable() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const rowsPerPage = 10;
   const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     loadCustomers();
@@ -165,21 +168,25 @@ export default function CustomerTable() {
   };
 
   const handleCopyLink = (customerId: string) => {
-    const url = `${window.location.origin}/kundedaten/${customerId}`;
-    navigator.clipboard.writeText(url).then(
-      () => {
-        console.log('URL copied to clipboard');
-      },
-      (err) => {
-        console.error('Could not copy text: ', err);
-      }
-    );
+    const publicLink = `${window.location.origin}${generatePublicAccessLink(customerId)}`;
+    navigator.clipboard.writeText(publicLink);
+    showSnackbar('Link wurde in die Zwischenablage kopiert', 'success');
   };
 
   const handleMailTo = (email: string, customerId: string) => {
-    const subject = 'Beratung';
-    const body = `Link zur Kundenakte: ${window.location.origin}/kundedaten/${customerId}\n\n`;
-    
+    const publicLink = `${window.location.origin}${generatePublicAccessLink(customerId)}`;
+    const subject = 'Ihre Versicherungsdaten';
+    const body = `
+Sehr geehrte Damen und Herren,
+
+unter folgendem Link können Sie Ihre Versicherungsdaten einsehen und bearbeiten:
+
+${publicLink}
+
+Mit freundlichen Grüßen
+Ihr Versicherungsteam
+    `.trim();
+
     const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailtoUrl;
   };
@@ -325,7 +332,10 @@ export default function CustomerTable() {
                           color="primary"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleMailTo(customer.formData?.personalData?.email || '', customer.customerId);
+                            handleMailTo(
+                              customer.formData?.personalData?.email || '', 
+                              customer.customerId
+                            );
                           }}
                           size="small"
                           sx={{ mr: 1 }}

@@ -25,7 +25,6 @@ interface NewCustomerFormProps {
   open?: boolean;
   onClose?: () => void;
   onSuccess?: () => void;
-  isPage?: boolean;
   isPublic?: boolean;
   customerId?: string;
 }
@@ -76,7 +75,6 @@ export default function NewCustomerForm({
   open,
   onClose,
   onSuccess,
-  isPage = false,
   isPublic = false,
   customerId,
 }: NewCustomerFormProps) {
@@ -126,11 +124,9 @@ export default function NewCustomerForm({
     setIsSubmitting(true);
     try {
       if (customerId && customerId !== 'new') {
-        // Update existing customer
         await customerService.updateCustomer(customerId, formData);
         showSnackbar('Kunde erfolgreich aktualisiert', 'success');
       } else {
-        // Create new customer
         const dataToSubmit = {
           ...formData,
           guid: crypto.randomUUID(),
@@ -145,7 +141,11 @@ export default function NewCustomerForm({
       if (onClose) {
         onClose();
       }
-      if (isPage) {
+      
+      // Navigate based on whether it's a public or private submission
+      if (isPublic) {
+        navigate('/public/thank-you');
+      } else {
         navigate('/');
       }
     } catch (error) {
@@ -555,22 +555,11 @@ export default function NewCustomerForm({
     </Box>
   );
 
-  if (isPage) {
-    return (
-      <Box>
-        <Typography variant="h5" component="div" gutterBottom>
-          Kundendaten
-        </Typography>
-        {formContent}
-      </Box>
-    );
-  }
-
   return (
     <Dialog open={open || false} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Typography variant="h5" component="div">
-          Datenabfrage für Ihre Kfz-Versicherung
+          {customerId && customerId !== 'new' ? 'Kundendaten bearbeiten' : 'Datenabfrage für Ihre Kfz-Versicherung'}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Bitte füllen Sie die fehlenden Daten so weit wie möglich aus. So
@@ -578,7 +567,9 @@ export default function NewCustomerForm({
         </Typography>
       </DialogTitle>
       <DialogContent>
-        {formContent}
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+          {formContent}
+        </Box>
       </DialogContent>
     </Dialog>
   );

@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import Layout from "./components/Layout";
 import { SnackbarProvider } from "./contexts/SnackbarContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ThankYouPage from "./pages/ThankYouPage";
 
 function App() {
   return (
@@ -22,6 +23,10 @@ function App() {
               <Route 
                 path="/public/customer/:customerId/:accessToken" 
                 element={<PublicCustomerPage />} 
+              />
+              <Route 
+                path="/public/thank-you" 
+                element={<ThankYouPage />} 
               />
               <Route
                 path="/"
