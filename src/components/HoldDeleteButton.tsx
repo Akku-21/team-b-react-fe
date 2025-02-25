@@ -85,13 +85,13 @@ export default function HoldDeleteButton({
       {isHolding && (
         <CircularProgress
           size={size === 'small' ? 34 : 44}
-          value={progress}
+          value={progress*3.6}
           variant="determinate"
           sx={{
             position: 'absolute',
             color: getColor(),
             transition: 'color 0.2s',
-            transform: 'rotate(-90deg)',
+            transform: 'rotate(-360deg)',
             left: '50%',
             top: '50%',
             marginLeft: size === 'small' ? '-17px' : '-22px',

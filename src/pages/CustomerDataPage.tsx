@@ -1,10 +1,10 @@
-import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import NewCustomerForm from '../components/NewCustomerForm';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function CustomerDataPage() {
   const { customerId } = useParams<{ customerId: string }>();
+  const navigate = useNavigate();
 
   return (
     <Box sx={{ p: 3 }}>
@@ -14,7 +14,9 @@ export default function CustomerDataPage() {
         </Typography>
         <NewCustomerForm 
           customerId={customerId}
-          open={true}
+          onSuccess={() => {
+            navigate('/kundedaten');
+         }}
         />
       </Paper>
     </Box>

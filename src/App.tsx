@@ -29,17 +29,7 @@ function App() {
                 element={<ThankYouPage />} 
               />
               <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <CustomerTable />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/kunden"
+                path="/kundendaten"
                 element={
                   <ProtectedRoute>
                     <Layout>

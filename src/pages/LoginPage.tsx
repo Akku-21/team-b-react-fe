@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       showSnackbar('Erfolgreich eingeloggt', 'success');
-      navigate('/');
+      navigate('/kundendaten');
     } catch (error) {
       showSnackbar('Ungültige Anmeldedaten', 'error');
     } finally {

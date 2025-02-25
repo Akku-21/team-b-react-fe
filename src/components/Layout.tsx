@@ -8,10 +8,9 @@ interface LayoutProps {
 }
 
 const COLLAPSED_WIDTH = 64;
-const EXPANDED_WIDTH = 240;
 
 export default function Layout({ children }: LayoutProps) {
-  const [isNavExpanded, setIsNavExpanded] = useState(false);
+  const [_,setIsNavExpanded] = useState(false);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

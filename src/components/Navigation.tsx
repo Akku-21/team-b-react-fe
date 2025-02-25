@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, List, ListItem, ListItemIcon, ListItemText, Paper, Tooltip } from '@mui/material';
+import { useState } from 'react';
+import { List, ListItem, ListItemIcon, ListItemText, Paper, Tooltip } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';

@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
   TextField,
   Button,
   Grid,
@@ -18,12 +15,9 @@ import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
 import { generateMockData } from "../utils/mockDataGenerator";
 import InputMask from "react-input-mask";
-import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from '../contexts/SnackbarContext';
 
 interface NewCustomerFormProps {
-  open?: boolean;
-  onClose?: () => void;
   onSuccess?: () => void;
   isPublic?: boolean;
   customerId?: string;
@@ -72,13 +66,9 @@ interface ValidationErrors {
 }
 
 export default function NewCustomerForm({
-  open,
-  onClose,
   onSuccess,
-  isPublic = false,
   customerId,
 }: NewCustomerFormProps) {
-  const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,9 +114,11 @@ export default function NewCustomerForm({
     setIsSubmitting(true);
     try {
       if (customerId && customerId !== 'new') {
+        // Update existing customer
         await customerService.updateCustomer(customerId, formData);
         showSnackbar('Kunde erfolgreich aktualisiert', 'success');
       } else {
+        // Create new customer
         const dataToSubmit = {
           ...formData,
           guid: crypto.randomUUID(),
@@ -137,16 +129,6 @@ export default function NewCustomerForm({
 
       if (onSuccess) {
         onSuccess();
-      }
-      if (onClose) {
-        onClose();
-      }
-      
-      // Navigate based on whether it's a public or private submission
-      if (isPublic) {
-        navigate('/public/thank-you');
-      } else {
-        navigate('/');
       }
     } catch (error) {
       console.error("Failed to save customer:", error);
@@ -515,25 +497,18 @@ export default function NewCustomerForm({
       </Grid>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-        {!isPublic && (
-          <Button
-            variant="outlined"
-            onClick={fillMockData}
-            sx={{
-              borderColor: "black",
-              color: "black",
-              "&:hover": { borderColor: "#333", color: "#333" },
-            }}
-          >
-            Mock Form
-          </Button>
-        )}
-        <Box sx={{ ml: 'auto' }}>
-          {!isPublic && onClose && (
-            <Button onClick={onClose} sx={{ mr: 1 }}>
-              Abbrechen
-            </Button>
-          )}
+        <Button
+          variant="outlined"
+          onClick={fillMockData}
+          sx={{
+            borderColor: "black",
+            color: "black",
+            "&:hover": { borderColor: "#333", color: "#333" },
+          }}
+        >
+          Mock Form
+        </Button>
+        <Box>
           <Button
             variant="contained"
             type="submit"
@@ -547,7 +522,7 @@ export default function NewCustomerForm({
             {isSubmitting ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              'Daten speichern'
+              'Daten senden'
             )}
           </Button>
         </Box>
@@ -555,22 +530,10 @@ export default function NewCustomerForm({
     </Box>
   );
 
-  return (
-    <Dialog open={open || false} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
-        <Typography variant="h5" component="div">
-          {customerId && customerId !== 'new' ? 'Kundendaten bearbeiten' : 'Datenabfrage für Ihre Kfz-Versicherung'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Bitte füllen Sie die fehlenden Daten so weit wie möglich aus. So
-          können wir bestens vorbereitet in Ihre Beratung starten.
-        </Typography>
-      </DialogTitle>
-      <DialogContent>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          {formContent}
-        </Box>
-      </DialogContent>
-    </Dialog>
-  );
-}
+    return (
+      <Box>
+        {formContent}
+      </Box>
+    );
+  }
+

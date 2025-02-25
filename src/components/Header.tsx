@@ -1,19 +1,10 @@
-import React from "react";
-import { Box, Typography, AppBar, Toolbar, Button } from "@mui/material";
+import {  Typography, AppBar, Toolbar, Button } from "@mui/material";
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
-
-interface HeaderProps {
-  agentName?: string;
-  agentRole?: string;
-  customerName?: string;
-}
 
 export default function Header() {
   const { logout, user } = useAuthStore();
   const navigate = useNavigate();
-  const theme = useTheme();
 
   const handleLogout = () => {
     logout();

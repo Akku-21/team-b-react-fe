@@ -1,16 +1,15 @@
-import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import NewCustomerForm from '../components/NewCustomerForm';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 export default function PublicCustomerPage() {
   const { customerId, accessToken } = useParams<{ customerId: string; accessToken: string }>();
-
+  const navigate = useNavigate();
   // Validate the access token format (in a real app, this would be more secure)
   const isValidAccessToken = accessToken?.match(/^[a-zA-Z0-9-_]{10,}$/);
 
   if (!isValidAccessToken) {
-    return <Navigate to="/login" replace />;
+   navigate('/public/invalid-link');
   }
 
   return (
@@ -34,9 +33,8 @@ export default function PublicCustomerPage() {
         <NewCustomerForm 
           customerId={customerId}
           isPublic
-          open={true}
           onSuccess={() => {
-            // Maybe show a success message
+             navigate('/public/thank-you');
           }}
         />
       </Paper>

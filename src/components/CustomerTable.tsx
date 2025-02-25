@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { format, isValid, parseISO } from "date-fns";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { Customer } from "../types/customer";
 import { customerService } from "../services/api";
-import NewCustomerForm from "./NewCustomerForm";
 import {
   Table,
   TableBody,
@@ -54,7 +52,6 @@ export default function CustomerTable() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [isNewCustomerFormOpen, setIsNewCustomerFormOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>("firstName");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const rowsPerPage = 10;
@@ -154,9 +151,6 @@ export default function CustomerTable() {
     setPage(value);
   };
 
-  const handleNewCustomerSuccess = () => {
-    loadCustomers();
-  };
 
   const handleDelete = async (customerId: string) => {
     try {
@@ -387,12 +381,6 @@ Ihr Versicherungsteam
             />
           </Box>
         </motion.div>
-
-        <NewCustomerForm
-          open={isNewCustomerFormOpen}
-          onClose={() => setIsNewCustomerFormOpen(false)}
-          onSuccess={handleNewCustomerSuccess}
-        />
       </Box>
     </LayoutGroup>
   );
