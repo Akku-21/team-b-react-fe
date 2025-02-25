@@ -66,6 +66,11 @@ const initialFormData: CustomerFormData = {
   guid: "",
 };
 
+// Add this interface to define required fields
+interface ValidationErrors {
+  [key: string]: string;
+}
+
 export default function NewCustomerForm({
   open,
   onClose,
@@ -77,6 +82,7 @@ export default function NewCustomerForm({
   const { showSnackbar } = useSnackbar();
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
   useEffect(() => {
     if (customerId) {
@@ -94,8 +100,27 @@ export default function NewCustomerForm({
     }
   };
 
+  // Add validation function
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    if (!formData.personalData.lastName.trim()) {
+      newErrors.lastName = 'Nachname ist erforderlich';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Update handleSubmit to include validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      showSnackbar('Bitte füllen Sie alle erforderlichen Felder aus', 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const dataToSubmit = {
@@ -162,12 +187,15 @@ export default function NewCustomerForm({
         <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
+            required
             size="small"
             label="Nachname"
             value={formData.personalData.lastName}
             onChange={(e) =>
               handleChange("personalData", "lastName", e.target.value)
             }
+            error={!!errors.lastName}
+            helperText={errors.lastName}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -458,7 +486,7 @@ export default function NewCustomerForm({
               handleChange("paymentInfo", "iban", e.target.value)
             }
           >
-            {(inputProps: { onChange: any; value: string }) => (
+            {(inputProps: { onChange: React.ChangeEventHandler<HTMLInputElement>; value: string }) => (
               <TextField
                 {...inputProps}
                 fullWidth
@@ -490,7 +518,7 @@ export default function NewCustomerForm({
           <Button
             variant="contained"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !formData.personalData.lastName.trim()}
             sx={{ 
               bgcolor: "black", 
               "&:hover": { bgcolor: "#333" },

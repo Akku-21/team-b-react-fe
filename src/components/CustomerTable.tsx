@@ -31,6 +31,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { useNavigate } from 'react-router-dom';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EmailIcon from '@mui/icons-material/Email';
+import HoldDeleteButton from './HoldDeleteButton';
 
 type SortField = "firstName" | "lastName" | "dob" | "email";
 type SortOrder = "asc" | "desc";
@@ -175,8 +176,12 @@ export default function CustomerTable() {
     );
   };
 
-  const handleMailTo = (email: string) => {
-    window.location.href = `mailto:${email}`;
+  const handleMailTo = (email: string, customerId: string) => {
+    const subject = 'Beratung';
+    const body = `Link zur Kundenakte: ${window.location.origin}/kundedaten/${customerId}\n\n`;
+    
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
   };
 
   return (
@@ -320,7 +325,7 @@ export default function CustomerTable() {
                           color="primary"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleMailTo(customer.formData?.personalData?.email || '');
+                            handleMailTo(customer.formData?.personalData?.email || '', customer.customerId);
                           }}
                           size="small"
                           sx={{ mr: 1 }}
@@ -328,16 +333,10 @@ export default function CustomerTable() {
                           <EmailIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <IconButton
-                        color="error"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(customer.customerId);
-                        }}
+                      <HoldDeleteButton
+                        onDelete={() => handleDelete(customer.customerId)}
                         size="small"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      />
                     </TableCell>
                   </motion.tr>
                 ))}
