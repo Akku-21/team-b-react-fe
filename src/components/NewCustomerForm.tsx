@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   TextField,
   Button,
@@ -14,8 +14,31 @@ import dayjs from "dayjs";
 import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
 import { generateMockData } from "../utils/mockDataGenerator";
-import InputMask from "react-input-mask";
 import { useSnackbar } from '../contexts/SnackbarContext';
+import { useMask } from '@react-input/mask';
+
+// Enhanced IBAN formatter function
+const formatIBAN = (value: string) => {
+  // Remove all non-alphanumeric characters
+  const cleaned = value.replace(/[^a-zA-Z0-9]/g, '');
+  
+  // Format with spaces every 4 characters
+  let formatted = '';
+  for (let i = 0; i < cleaned.length; i++) {
+    if (i > 0 && i % 4 === 0) {
+      formatted += ' ';
+    }
+    formatted += cleaned[i];
+  }
+  
+  return formatted;
+};
+
+// Email validation function
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
 
 interface NewCustomerFormProps {
   onSuccess?: () => void;
@@ -73,6 +96,15 @@ export default function NewCustomerForm({
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  
+  // Create refs for masked inputs
+  const ibanInputRef = useMask({ 
+    mask: 'XX99 9999 9999 9999 9999 99', 
+    replacement: { 
+      '9': /\d/,
+      'X': /[DE]/i  // Allow D and E characters (case insensitive)
+    } 
+  });
 
   useEffect(() => {
     if (customerId) {
@@ -80,14 +112,40 @@ export default function NewCustomerForm({
     }
   }, [customerId]);
 
+  // Format IBAN when data is loaded
+  useEffect(() => {
+    if (formData.paymentInfo.iban) {
+      const formattedIBAN = formatIBAN(formData.paymentInfo.iban);
+      handleChange("paymentInfo", "iban", formattedIBAN);
+    }
+  }, [formData.paymentInfo.iban]);
+
   const loadCustomerData = async (id: string) => {
     try {
       // Assuming you have an API endpoint to get customer by ID
       const data = await customerService.getCustomerById(id);
-      setFormData(data.formData);
+      
+      // Format IBAN before setting form data
+      const formattedData = {
+        ...data.formData,
+        paymentInfo: {
+          ...data.formData.paymentInfo,
+          iban: formatIBAN(data.formData.paymentInfo.iban || '')
+        }
+      };
+      
+      setFormData(formattedData);
     } catch (error) {
       console.error("Failed to load customer data:", error);
     }
+  };
+
+  // Handle IBAN paste event
+  const handleIBANPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const formattedIBAN = formatIBAN(pastedText);
+    handleChange("paymentInfo", "iban", formattedIBAN);
   };
 
   // Add validation function
@@ -96,6 +154,11 @@ export default function NewCustomerForm({
 
     if (!formData.personalData.lastName.trim()) {
       newErrors.lastName = 'Nachname ist erforderlich';
+    }
+    
+    // Add email validation
+    if (formData.personalData.email && !isValidEmail(formData.personalData.email)) {
+      newErrors.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein';
     }
 
     setErrors(newErrors);
@@ -266,6 +329,8 @@ export default function NewCustomerForm({
             onChange={(e) =>
               handleChange("personalData", "email", e.target.value)
             }
+            error={!!errors.email}
+            helperText={errors.email}
           />
         </Grid>
       </Grid>
@@ -476,23 +541,18 @@ export default function NewCustomerForm({
       </Typography>
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12}>
-          <InputMask
-            mask="DE99 9999 9999 9999 9999 99"
+          <TextField
+            fullWidth
+            size="small"
+            label="IBAN"
+            placeholder="DE12 3456 7890 1234 5678 90"
             value={formData.paymentInfo.iban}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(e) =>
               handleChange("paymentInfo", "iban", e.target.value)
             }
-          >
-            {(inputProps: { onChange: React.ChangeEventHandler<HTMLInputElement>; value: string }) => (
-              <TextField
-                {...inputProps}
-                fullWidth
-                size="small"
-                label="IBAN"
-                placeholder="DE12 3456 7890 1234 5678 90"
-              />
-            )}
-          </InputMask>
+            onPaste={handleIBANPaste}
+            inputRef={ibanInputRef}
+          />
         </Grid>
       </Grid>
 
