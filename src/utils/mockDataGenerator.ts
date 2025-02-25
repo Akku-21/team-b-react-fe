@@ -1,3 +1,5 @@
+import { CustomerFormData } from "../types/customer";
+
 const CITIES = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf'];
 const STREETS = ['Hauptstraße', 'Bahnhofstraße', 'Schulstraße', 'Gartenweg', 'Kirchplatz', 'Marktplatz'];
 const MAKES = ['BMW', 'Mercedes', 'Audi', 'VW', 'Porsche', 'Opel'];
@@ -9,7 +11,6 @@ const MODELS = {
   Porsche: ['911', 'Cayenne', 'Macan', 'Taycan', 'Panamera'],
   Opel: ['Corsa', 'Astra', 'Insignia', 'Mokka', 'Grandland']
 };
-const BANKS = ['Deutsche Bank', 'Commerzbank', 'Sparkasse', 'Volksbank', 'HypoVereinsbank'];
 const MARITAL_STATUS = ['Ledig', 'Verheiratet', 'Geschieden'];
 const FIRST_NAMES = ['Max', 'Anna', 'Paul', 'Maria', 'Thomas', 'Laura', 'Michael', 'Sarah'];
 const LAST_NAMES = ['Müller', 'Schmidt', 'Schneider', 'Fischer', 'Weber', 'Meyer', 'Wagner'];
@@ -43,13 +44,6 @@ const generateIBAN = (): string => {
   return `${countryCode}${bankCode}${accountNumber}`;
 };
 
-const generateBIC = (): string => {
-  const bankCodes = ['DEUT', 'COBA', 'DRES', 'COMM', 'HYVE'];
-  const countryCode = 'DE';
-  const locationCode = String(randomNumber(10, 99));
-  return `${randomElement(bankCodes)}${countryCode}${locationCode}XXX`;
-};
-
 const generateLicensePlate = (): string => {
   const cities = ['M', 'B', 'F', 'K', 'S', 'H'];
   const letters = 'ABCDEFGHJKLMNPRSTUVWXYZ';
@@ -75,7 +69,7 @@ const formatMileage = (km: number): string => {
   return new Intl.NumberFormat('de-DE').format(km);
 };
 
-export const generateMockData = () => {
+export const generateMockData = ():CustomerFormData => {
   const make = randomElement(MAKES);
   const now = new Date();
   const yearStart = new Date(now.getFullYear(), 0, 1);
@@ -85,7 +79,6 @@ export const generateMockData = () => {
 
   const firstName = randomElement(FIRST_NAMES);
   const lastName = randomElement(LAST_NAMES);
-  const fullName = `${firstName} ${lastName}`;
 
   return {
     vehicleData: {
@@ -100,20 +93,19 @@ export const generateMockData = () => {
       currentMileage: formatMileage(randomNumber(1000, 150000))
     },
     driverInfo: {
-      name: fullName,
       dob: randomDate(dobStart, dobEnd),
       licenseNumber: randomDate(licenseStart, now),
       maritalStatus: randomElement(MARITAL_STATUS)
     },
-    insuranceWishes: {
-      coverageType: randomElement(['Vollkasko', 'Teilkasko', 'Haftpflicht']),
-      deductible: randomElement([300, 500, 1000]),
-      insuranceStart: randomDate(now, new Date(now.getFullYear() + 1, 0, 1))
-    },
+    insuranceInfo: {
+        startDate: randomDate(now, new Date(now.getFullYear() + 1, 0, 1)),
+        previousInsurance: "foo",
+        previousInsuranceNumber: "123",
+      },
     personalData: {
       email: generateEmail(firstName, lastName),
-      phone: `+49 ${randomNumber(100, 999)} ${randomNumber(1000000, 9999999)}`,
-      address: '',
+      firstName: firstName,
+      lastName: lastName,
       street: randomElement(STREETS),
       houseNumber: String(randomNumber(1, 150)),
       postalCode: String(randomNumber(10000, 99999)),
@@ -121,8 +113,6 @@ export const generateMockData = () => {
     },
     paymentInfo: {
       iban: generateIBAN(),
-      bic: generateBIC(),
-      bankName: randomElement(BANKS)
     },
     guid: ''
   };

@@ -11,20 +11,19 @@ export interface CustomerFormData {
     currentMileage: string;
   };
   driverInfo: {
-    name: string;
     dob: string;
     licenseNumber: string;
     maritalStatus: string;
   };
-  insuranceWishes: {
-    coverageType: string;
-    deductible: number;
-    insuranceStart: string;
+  insuranceInfo: {
+    startDate: string;
+    previousInsurance: string;
+    previousInsuranceNumber: string;
   };
   personalData: {
     email: string;
-    phone: string;
-    address: string;
+    firstName: string;
+    lastName: string;
     street: string;
     houseNumber: string;
     postalCode: string;
@@ -32,8 +31,6 @@ export interface CustomerFormData {
   };
   paymentInfo: {
     iban: string;
-    bic: string;
-    bankName: string;
   };
   guid: string;
 }

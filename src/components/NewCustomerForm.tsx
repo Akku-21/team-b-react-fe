@@ -8,12 +8,11 @@ import {
   Grid,
   Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   Typography,
   Box,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import InputMask from "react-input-mask";
 import dayjs from "dayjs";
 import { CustomerFormData } from "../types/customer";
 import { customerService } from "../services/api";
@@ -38,20 +37,19 @@ const initialFormData: CustomerFormData = {
     currentMileage: "",
   },
   driverInfo: {
-    name: "",
     dob: "",
     licenseNumber: "",
     maritalStatus: "",
   },
-  insuranceWishes: {
-    coverageType: "",
-    deductible: 1,
-    insuranceStart: "",
+  insuranceInfo: {
+    startDate: "",
+    previousInsurance: "",
+    previousInsuranceNumber: "",
   },
   personalData: {
     email: "",
-    phone: "",
-    address: "",
+    firstName: "",
+    lastName: "",
     street: "",
     houseNumber: "",
     postalCode: "",
@@ -59,8 +57,6 @@ const initialFormData: CustomerFormData = {
   },
   paymentInfo: {
     iban: "",
-    bic: "",
-    bankName: "",
   },
   guid: "",
 };
@@ -85,11 +81,6 @@ export default function NewCustomerForm({
     } catch (error) {
       console.error("Failed to create customer:", error);
     }
-  };
-
-  const formatNumber = (value: string) => {
-    const number = value.replace(/\D/g, "");
-    return new Intl.NumberFormat("de-DE").format(Number(number));
   };
 
   const handleChange = (
@@ -130,7 +121,29 @@ export default function NewCustomerForm({
             Persönliche Informationen
           </Typography>
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Vorname"
+                value={formData.personalData.firstName}
+                onChange={(e) =>
+                  handleChange("personalData", "firstName", e.target.value)
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Nachname"
+                value={formData.personalData.lastName}
+                onChange={(e) =>
+                  handleChange("personalData", "lastName", e.target.value)
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
               <DatePicker
                 label="Geburtsdatum"
                 value={
@@ -153,23 +166,23 @@ export default function NewCustomerForm({
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Familienstand</InputLabel>
-                <Select
-                  value={formData.driverInfo.maritalStatus}
-                  label="Familienstand"
-                  onChange={(e) =>
-                    handleChange("driverInfo", "maritalStatus", e.target.value)
-                  }
-                >
-                  <MenuItem value="Ledig">Ledig</MenuItem>
-                  <MenuItem value="Verheiratet">Verheiratet</MenuItem>
-                  <MenuItem value="Geschieden">Geschieden</MenuItem>
-                </Select>
-              </FormControl>
+            <Grid item xs={12} sm={6}>
+              <Select
+                fullWidth
+                size="small"
+                value={formData.driverInfo.maritalStatus}
+                onChange={(e) =>
+                  handleChange("driverInfo", "maritalStatus", e.target.value)
+                }
+                displayEmpty
+              >
+                <MenuItem value="">Familienstand</MenuItem>
+                <MenuItem value="Ledig">Ledig</MenuItem>
+                <MenuItem value="Verheiratet">Verheiratet</MenuItem>
+                <MenuItem value="Geschieden">Geschieden</MenuItem>
+              </Select>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <DatePicker
                 label="Führerscheindatum"
                 value={
@@ -190,6 +203,17 @@ export default function NewCustomerForm({
                     size: "small",
                   },
                 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                size="small"
+                label="E-Mail Adresse"
+                value={formData.personalData.email}
+                onChange={(e) =>
+                  handleChange("driverInfo", "email", e.target.value)
+                }
               />
             </Grid>
           </Grid>
@@ -248,7 +272,7 @@ export default function NewCustomerForm({
             Fahrzeugdaten
           </Typography>
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 size="small"
@@ -263,7 +287,7 @@ export default function NewCustomerForm({
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 size="small"
@@ -278,7 +302,7 @@ export default function NewCustomerForm({
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 size="small"
@@ -289,7 +313,7 @@ export default function NewCustomerForm({
                 }
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <DatePicker
                 label="Erstzulassung"
                 value={
@@ -312,26 +336,18 @@ export default function NewCustomerForm({
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 size="small"
                 label="Aktueller km-Stand"
                 value={formData.vehicleData.currentMileage}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, "");
-                  handleChange(
-                    "vehicleData",
-                    "currentMileage",
-                    formatNumber(value),
-                  );
-                }}
-                inputProps={{
-                  inputMode: "numeric",
-                }}
+                onChange={(e) =>
+                  handleChange("vehicleData", "currentMileage", e.target.value)
+                }
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 size="small"
@@ -345,41 +361,85 @@ export default function NewCustomerForm({
           </Grid>
 
           <Typography variant="h6" gutterBottom>
-            Zahlungsinformation
+            Versicherungsinformationen
           </Typography>
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
+              <DatePicker
+                label="Versicherungsbeginn"
+                value={
+                  formData.insuranceInfo.startDate
+                    ? dayjs(formData.insuranceInfo.startDate)
+                    : null
+                }
+                onChange={(newValue) =>
+                  handleChange(
+                    "insuranceInfo",
+                    "startDate",
+                    newValue ? newValue.format("YYYY-MM-DD") : "",
+                  )
+                }
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    size: "small",
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 size="small"
-                label="IBAN"
+                label="Bisherige Versicherung"
+                value={formData.insuranceInfo.previousInsurance}
+                onChange={(e) =>
+                  handleChange(
+                    "insuranceInfo",
+                    "previousInsurance",
+                    e.target.value,
+                  )
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Bisherige Versicherungsnummer"
+                value={formData.insuranceInfo.previousInsuranceNumber}
+                onChange={(e) =>
+                  handleChange(
+                    "insuranceInfo",
+                    "previousInsuranceNumber",
+                    e.target.value,
+                  )
+                }
+              />
+            </Grid>
+          </Grid>
+
+          <Typography variant="h6" gutterBottom>
+            Zahlungsinformation
+          </Typography>
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12}>
+              <InputMask
+                mask="DE99 9999 9999 9999 9999 99"
                 value={formData.paymentInfo.iban}
                 onChange={(e) =>
                   handleChange("paymentInfo", "iban", e.target.value)
                 }
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                size="small"
-                label="BIC"
-                value={formData.paymentInfo.bic}
-                onChange={(e) =>
-                  handleChange("paymentInfo", "bic", e.target.value)
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Geldinstitut"
-                value={formData.paymentInfo.bankName}
-                onChange={(e) =>
-                  handleChange("paymentInfo", "bankName", e.target.value)
-                }
-              />
+              >
+                {(inputProps: any) => (
+                  <TextField
+                    {...inputProps}
+                    fullWidth
+                    size="small"
+                    label="IBAN"
+                  />
+                )}
+              </InputMask>
             </Grid>
           </Grid>
 
