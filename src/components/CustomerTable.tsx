@@ -20,6 +20,7 @@ import {
   IconButton,
   Box,
   InputAdornment,
+  Pagination,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -85,8 +86,11 @@ export default function CustomerTable() {
     page * rowsPerPage,
   );
 
-  const handlePageChange = (newPage: number) => {
-    setPage(Math.min(Math.max(1, newPage), totalPages));
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number,
+  ) => {
+    setPage(value);
   };
 
   const handleNewCustomerSuccess = () => {
@@ -210,9 +214,9 @@ export default function CustomerTable() {
             stiffness: 300,
             damping: 30,
           }}
-          className="flex justify-between items-center text-sm text-gray-600"
+          className="flex justify-end items-center text-sm text-gray-600"
         >
-          <Typography variant="body2">
+          {/* <Typography variant="body2">
             Zeige {(page - 1) * rowsPerPage + 1}-
             {Math.min(page * rowsPerPage, filteredCustomers.length)} von{" "}
             {filteredCustomers.length} Einträgen
@@ -246,6 +250,23 @@ export default function CustomerTable() {
             >
               Weiter
             </Button>
+          </Box> */}
+          <Box className="flex justify-between items-center ">
+            <Typography variant="body2" className="text-gray-600">
+              Zeige {(page - 1) * rowsPerPage + 1}-
+              {Math.min(page * rowsPerPage, filteredCustomers.length)} von{" "}
+              {filteredCustomers.length} Einträgen
+            </Typography>
+            <Pagination
+              className="align-end"
+              count={5}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              shape="rounded"
+              showFirstButton
+              showLastButton
+            />
           </Box>
         </motion.div>
 
