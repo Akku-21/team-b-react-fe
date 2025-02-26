@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
-import { 
-  Box, 
-  TextField, 
-  Button, 
-  Typography, 
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
   Paper,
-  CircularProgress
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import { useSnackbar } from '../contexts/SnackbarContext';
+  CircularProgress,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import { useSnackbar } from "../contexts/SnackbarContext";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const login = useAuthStore(state => state.login);
+  const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
+
+  // Check if user is already logged in on component mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      // User is already logged in, redirect to kundendaten page
+      navigate("/kundendaten", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,10 +34,11 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      showSnackbar('Erfolgreich eingeloggt', 'success');
-      navigate('/kundendaten');
-    } catch (error) {
-      showSnackbar('Ungültige Anmeldedaten', 'error');
+
+      showSnackbar("Login erfolgreich", "success");
+      navigate("/kundendaten");
+    } catch (error: any) {
+      showSnackbar(error?.message || "Ein Fehler ist aufgetreten", "error");
     } finally {
       setIsLoading(false);
     }
@@ -37,18 +47,18 @@ export default function LoginPage() {
   return (
     <Box
       sx={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: '#f5f5f5'
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "#f5f5f5",
       }}
     >
       <Paper
         elevation={3}
         sx={{
           p: 4,
-          width: '100%',
+          width: "100%",
           maxWidth: 400,
         }}
       >
@@ -79,20 +89,20 @@ export default function LoginPage() {
             type="submit"
             variant="contained"
             disabled={isLoading}
-            sx={{ 
+            sx={{
               mt: 3,
               bgcolor: "black",
-              "&:hover": { bgcolor: "#333" }
+              "&:hover": { bgcolor: "#333" },
             }}
           >
             {isLoading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              'Anmelden'
+              "Anmelden"
             )}
           </Button>
         </Box>
       </Paper>
     </Box>
   );
-} 
+}

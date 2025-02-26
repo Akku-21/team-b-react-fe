@@ -1,7 +1,12 @@
 import { ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { theme } from "./theme";
 import CustomerTable from "./components/CustomerTable";
 import CustomerDataPage from "./pages/CustomerDataPage";
@@ -17,17 +22,14 @@ function App() {
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <SnackbarProvider>
-          <BrowserRouter>
+          <Router>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
-              <Route 
-                path="/public/customer/:customerId/:accessToken" 
-                element={<PublicCustomerPage />} 
+              <Route
+                path="/public/customer/:customerId/:accessToken"
+                element={<PublicCustomerPage />}
               />
-              <Route 
-                path="/public/thank-you" 
-                element={<ThankYouPage />} 
-              />
+              <Route path="/public/thank-you" element={<ThankYouPage />} />
               <Route
                 path="/kundendaten"
                 element={
@@ -69,8 +71,10 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Add a catch-all route at the end that redirects to login */}
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
-          </BrowserRouter>
+          </Router>
         </SnackbarProvider>
       </LocalizationProvider>
     </ThemeProvider>
