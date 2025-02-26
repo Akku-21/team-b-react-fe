@@ -8,6 +8,7 @@ import {
   Box,
   CircularProgress,
   Alert,
+  Autocomplete,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
@@ -16,6 +17,14 @@ import { customerService } from "../services/api";
 import { generateMockData } from "../utils/mockDataGenerator";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import { useMask } from "@react-input/mask";
+import {
+  isValidEmail,
+  isValidPostalCode,
+  isValidCity,
+  postalCodeAndCityMatch,
+  suggestCitiesForPostalCode,
+} from "../utils/validation";
+import { germanInsuranceCompanies } from "../utils/insuranceCompanies";
 
 // Enhanced IBAN formatter function
 const formatIBAN = (value: string) => {
@@ -32,12 +41,6 @@ const formatIBAN = (value: string) => {
   }
 
   return formatted;
-};
-
-// Email validation function
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
 };
 
 interface NewCustomerFormProps {
@@ -98,6 +101,7 @@ export default function NewCustomerForm({
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [suggestedCities, setSuggestedCities] = useState<string[]>([]);
 
   // Create refs for masked inputs
   const ibanInputRef = useMask({
@@ -150,6 +154,19 @@ export default function NewCustomerForm({
     handleChange("paymentInfo", "iban", formattedIBAN);
   };
 
+  // Update postal code handler to suggest cities
+  const handlePostalCodeChange = (value: string) => {
+    handleChange("personalData", "postalCode", value);
+
+    // If postal code is valid, suggest cities
+    if (isValidPostalCode(value)) {
+      const cities = suggestCitiesForPostalCode(value);
+      setSuggestedCities(cities);
+    } else {
+      setSuggestedCities([]);
+    }
+  };
+
   // Add validation function
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
@@ -164,6 +181,31 @@ export default function NewCustomerForm({
       !isValidEmail(formData.personalData.email)
     ) {
       newErrors.email = "Bitte geben Sie eine gültige E-Mail-Adresse ein";
+    }
+
+    // Add postal code validation
+    if (formData.personalData.postalCode) {
+      if (!isValidPostalCode(formData.personalData.postalCode)) {
+        newErrors.postalCode =
+          "Bitte geben Sie eine gültige Postleitzahl ein (5 Ziffern)";
+      } else if (
+        formData.personalData.city &&
+        !postalCodeAndCityMatch(
+          formData.personalData.postalCode,
+          formData.personalData.city
+        )
+      ) {
+        newErrors.postalCode = "Postleitzahl passt nicht zum angegebenen Ort";
+        newErrors.city = "Ort passt nicht zur angegebenen Postleitzahl";
+      }
+    }
+
+    // Add city validation
+    if (
+      formData.personalData.city &&
+      !isValidCity(formData.personalData.city)
+    ) {
+      newErrors.city = "Bitte geben Sie einen gültigen Ort ein";
     }
 
     setErrors(newErrors);
@@ -400,21 +442,44 @@ export default function NewCustomerForm({
             size="small"
             label="Postleitzahl"
             value={formData.personalData.postalCode}
-            onChange={(e) =>
-              handleChange("personalData", "postalCode", e.target.value)
-            }
+            onChange={(e) => handlePostalCodeChange(e.target.value)}
+            error={!!errors.postalCode}
+            helperText={errors.postalCode}
+            inputProps={{ maxLength: 5 }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            size="small"
-            label="Ort"
-            value={formData.personalData.city}
-            onChange={(e) =>
-              handleChange("personalData", "city", e.target.value)
-            }
-          />
+          {suggestedCities.length > 0 ? (
+            <Autocomplete
+              options={suggestedCities}
+              value={formData.personalData.city}
+              onChange={(_, newValue) => {
+                handleChange("personalData", "city", newValue || "");
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  fullWidth
+                  size="small"
+                  label="Ort"
+                  error={!!errors.city}
+                  helperText={errors.city}
+                />
+              )}
+            />
+          ) : (
+            <TextField
+              fullWidth
+              size="small"
+              label="Ort"
+              value={formData.personalData.city}
+              onChange={(e) =>
+                handleChange("personalData", "city", e.target.value)
+              }
+              error={!!errors.city}
+              helperText={errors.city}
+            />
+          )}
         </Grid>
       </Grid>
 
@@ -535,6 +600,7 @@ export default function NewCustomerForm({
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
+            select
             fullWidth
             size="small"
             label="Bisherige Versicherung"
@@ -542,7 +608,16 @@ export default function NewCustomerForm({
             onChange={(e) =>
               handleChange("insuranceInfo", "previousInsurance", e.target.value)
             }
-          />
+          >
+            <MenuItem value="" disabled>
+              <em>Bitte auswählen</em>
+            </MenuItem>
+            {germanInsuranceCompanies.map((company) => (
+              <MenuItem key={company} value={company}>
+                {company}
+              </MenuItem>
+            ))}
+          </TextField>
         </Grid>
         <Grid item xs={12}>
           <TextField
