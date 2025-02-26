@@ -28,7 +28,6 @@ export interface CustomerFormData {
     houseNumber: string;
     postalCode: string;
     city: string;
-    phoneNumber: string;
   };
   paymentInfo: {
     iban: string;
