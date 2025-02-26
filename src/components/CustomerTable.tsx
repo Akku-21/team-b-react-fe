@@ -34,6 +34,7 @@ import { generatePublicAccessLink } from "../utils/linkGenerator";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 type SortField = "firstName" | "lastName" | "dob" | "email";
 type SortOrder = "asc" | "desc";
@@ -192,6 +193,14 @@ Ihr Versicherungsteam
     window.location.href = mailtoUrl;
   };
 
+  // Add a function to refresh the data
+  const handleRefresh = () => {
+    // Reload the customer data
+    loadCustomers();
+    // Show a success message
+    showSnackbar("Kundendaten aktualisiert", "success");
+  };
+
   return (
     <LayoutGroup>
       <Box className="p-6">
@@ -234,6 +243,11 @@ Ihr Versicherungsteam
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          <Tooltip title="Daten aktualisieren">
+            <IconButton onClick={handleRefresh} color="primary">
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
 
         <TableContainer component={Paper} className="mb-6 shadow-sm">
