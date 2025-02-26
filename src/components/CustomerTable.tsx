@@ -256,20 +256,20 @@ Ihr Versicherungsteam
               <TableRow>
                 <TableCell>
                   <TableSortLabel
-                    active={sortField === "firstName"}
-                    direction={sortField === "firstName" ? sortOrder : "asc"}
-                    onClick={() => handleSort("firstName")}
-                  >
-                    Vorname
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel
                     active={sortField === "lastName"}
                     direction={sortField === "lastName" ? sortOrder : "asc"}
                     onClick={() => handleSort("lastName")}
                   >
                     Nachname
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === "firstName"}
+                    direction={sortField === "firstName" ? sortOrder : "asc"}
+                    onClick={() => handleSort("firstName")}
+                  >
+                    Vorname
                   </TableSortLabel>
                 </TableCell>
                 <TableCell>
@@ -290,7 +290,9 @@ Ihr Versicherungsteam
                     Email
                   </TableSortLabel>
                 </TableCell>
-                <TableCell align="center">Vom Kunden bearbeitet</TableCell>
+                <TableCell align="center" sx={{ width: "120px" }}>
+                  Bearbeitet
+                </TableCell>
                 <TableCell align="right">Aktionen</TableCell>
               </TableRow>
             </TableHead>
@@ -316,10 +318,10 @@ Ihr Versicherungsteam
                     layout
                   >
                     <TableCell>
-                      {customer.formData?.personalData?.firstName || ""}
+                      {customer.formData?.personalData?.lastName || ""}
                     </TableCell>
                     <TableCell>
-                      {customer.formData?.personalData?.lastName || ""}
+                      {customer.formData?.personalData?.firstName || ""}
                     </TableCell>
                     <TableCell>
                       {formatDate(customer.formData?.driverInfo?.dob || "")}
