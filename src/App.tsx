@@ -16,6 +16,7 @@ import Layout from "./components/Layout";
 import { SnackbarProvider } from "./contexts/SnackbarContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ThankYouPage from "./pages/ThankYouPage";
+import OwlPage from "./pages/OwlPage";
 
 function App() {
   return (
@@ -50,7 +51,16 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Add placeholder routes for other navigation items */}
+              <Route
+                path="/eule"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <OwlPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/statistiken"
                 element={
@@ -71,7 +81,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Add a catch-all route at the end that redirects to login */}
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </Router>

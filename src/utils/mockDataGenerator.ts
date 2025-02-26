@@ -125,6 +125,7 @@ export const generateMockData = ():CustomerFormData => {
     paymentInfo: {
       iban: generateIBAN(),
     },
-    guid: ''
+    guid: '',
+    editedByCustomer: false
   };
 };

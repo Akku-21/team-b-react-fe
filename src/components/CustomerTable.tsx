@@ -38,7 +38,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useCustomerStore } from "../store/customerStore";
-import DancingOwl from "./DancingOwl";
 
 type SortField = "firstName" | "lastName" | "dob" | "email";
 type SortOrder = "asc" | "desc";
@@ -424,30 +423,6 @@ Ihr Versicherungsteam
                 />
               </Box>
             </motion.div>
-
-            <Box
-              component={Paper}
-              sx={{
-                mt: 4,
-                borderRadius: 2,
-                overflow: "hidden",
-                boxShadow: 1,
-                width: "100%",
-                p: 4,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Box
-                sx={{
-                  width: 300,
-                  height: 300,
-                }}
-              >
-                <DancingOwl />
-              </Box>
-            </Box>
           </>
         )}
       </Box>
