@@ -69,6 +69,16 @@ const formatMileage = (km: number): string => {
   return new Intl.NumberFormat('de-DE').format(km);
 };
 
+// Add a function to generate random phone numbers
+const generatePhoneNumber = (): string => {
+  const formats = [
+    `+49 ${randomNumber(100, 999)} ${randomNumber(1000000, 9999999)}`,
+    `0${randomNumber(100, 999)} ${randomNumber(100000, 9999999)}`,
+    `0${randomNumber(1000, 9999)} ${randomNumber(10000, 999999)}`
+  ];
+  return randomElement(formats);
+};
+
 export const generateMockData = ():CustomerFormData => {
   const make = randomElement(MAKES);
   const now = new Date();
@@ -109,7 +119,8 @@ export const generateMockData = ():CustomerFormData => {
       street: randomElement(STREETS),
       houseNumber: String(randomNumber(1, 150)),
       postalCode: String(randomNumber(10000, 99999)),
-      city: randomElement(CITIES)
+      city: randomElement(CITIES),
+      phoneNumber: generatePhoneNumber(),
     },
     paymentInfo: {
       iban: generateIBAN(),

@@ -14,6 +14,7 @@ import NewCustomerForm from "../components/NewCustomerForm";
 import { customerService } from "../services/api";
 import { useSnackbar } from "../contexts/SnackbarContext";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useCustomerStore } from "../store/customerStore";
 
 export default function CustomerDataPage() {
   const { customerId } = useParams<{ customerId: string }>();
@@ -22,6 +23,7 @@ export default function CustomerDataPage() {
   const [loading, setLoading] = useState(true);
   const [customer, setCustomer] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const { resetEditedStatus } = useCustomerStore();
 
   useEffect(() => {
     if (customerId && customerId !== "new") {
@@ -49,25 +51,21 @@ export default function CustomerDataPage() {
     navigate("/kundendaten");
   };
 
-  // Add function to reset editedByCustomer flag
   const handleResetEditedByCustomer = async () => {
-    if (!customer || !customerId) return;
+    if (!customerId) return;
 
     try {
-      // Create updated form data with editedByCustomer set to false
-      const updatedFormData = {
-        ...customer.formData,
-        editedByCustomer: false,
-      };
+      await resetEditedStatus(customerId);
 
-      // Update the customer with the modified data
-      await customerService.updateCustomer(customerId, updatedFormData);
-
-      // Update local state
-      setCustomer({
-        ...customer,
-        formData: updatedFormData,
-      });
+      if (customer) {
+        setCustomer({
+          ...customer,
+          formData: {
+            ...customer.formData,
+            editedByCustomer: false,
+          },
+        });
+      }
 
       showSnackbar("Bearbeitungsstatus zurückgesetzt", "success");
     } catch (error) {
@@ -108,7 +106,6 @@ export default function CustomerDataPage() {
         <Alert severity="error">{error}</Alert>
       ) : (
         <Paper sx={{ p: 3 }}>
-          {/* Add reset editedByCustomer control if this is an existing customer */}
           {customerId &&
             customerId !== "new" &&
             customer?.formData?.editedByCustomer && (

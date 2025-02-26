@@ -21,6 +21,8 @@ import {
   Pagination,
   TableSortLabel,
   Tooltip,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -35,6 +37,8 @@ import { useSnackbar } from "../contexts/SnackbarContext";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import { useCustomerStore } from "../store/customerStore";
+import DancingOwl from "./DancingOwl";
 
 type SortField = "firstName" | "lastName" | "dob" | "email";
 type SortOrder = "asc" | "desc";
@@ -52,7 +56,8 @@ const paginationVariants = {
 };
 
 export default function CustomerTable() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const { customers, isLoading, error, fetchCustomers, deleteCustomer } =
+    useCustomerStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>("firstName");
@@ -62,22 +67,13 @@ export default function CustomerTable() {
   const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
-    loadCustomers();
-  }, []);
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   // Reset page when search term changes
   useEffect(() => {
     setPage(1);
   }, [searchTerm]);
-
-  const loadCustomers = async () => {
-    try {
-      const data = await customerService.getCustomers();
-      setCustomers(data);
-    } catch (error) {
-      console.error("Failed to load customers:", error);
-    }
-  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -156,10 +152,10 @@ export default function CustomerTable() {
 
   const handleDelete = async (customerId: string) => {
     try {
-      await customerService.deleteCustomer(customerId);
-      loadCustomers();
+      await deleteCustomer(customerId);
+      showSnackbar("Kunde erfolgreich gelöscht", "success");
     } catch (error) {
-      console.error("Failed to delete customer:", error);
+      showSnackbar("Fehler beim Löschen des Kunden", "error");
     }
   };
 
@@ -193,11 +189,9 @@ Ihr Versicherungsteam
     window.location.href = mailtoUrl;
   };
 
-  // Add a function to refresh the data
+  // Update the refresh function to use the store
   const handleRefresh = () => {
-    // Reload the customer data
-    loadCustomers();
-    // Show a success message
+    fetchCustomers();
     showSnackbar("Kundendaten aktualisiert", "success");
   };
 
@@ -250,166 +244,212 @@ Ihr Versicherungsteam
           </Tooltip>
         </Box>
 
-        <TableContainer component={Paper} className="mb-6 shadow-sm">
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortField === "lastName"}
-                    direction={sortField === "lastName" ? sortOrder : "asc"}
-                    onClick={() => handleSort("lastName")}
-                  >
-                    Nachname
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortField === "firstName"}
-                    direction={sortField === "firstName" ? sortOrder : "asc"}
-                    onClick={() => handleSort("firstName")}
-                  >
-                    Vorname
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortField === "dob"}
-                    direction={sortField === "dob" ? sortOrder : "asc"}
-                    onClick={() => handleSort("dob")}
-                  >
-                    Geburtsdatum
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortField === "email"}
-                    direction={sortField === "email" ? sortOrder : "asc"}
-                    onClick={() => handleSort("email")}
-                  >
-                    Email
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell align="center" sx={{ width: "120px" }}>
-                  Bearbeitet
-                </TableCell>
-                <TableCell align="right">Aktionen</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <AnimatePresence mode="wait">
-                {paginatedCustomers.map((customer) => (
-                  <motion.tr
-                    key={customer.customerId}
-                    onClick={() =>
-                      navigate(`/kundedaten/${customer.customerId}`)
-                    }
-                    style={{ cursor: "pointer" }}
-                    variants={tableRowVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    transition={{
-                      type: "spring",
-                      stiffness: 200,
-                      damping: 20,
-                      mass: 0.5,
-                    }}
-                    layout
-                  >
-                    <TableCell>
-                      {customer.formData?.personalData?.lastName || ""}
-                    </TableCell>
-                    <TableCell>
-                      {customer.formData?.personalData?.firstName || ""}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(customer.formData?.driverInfo?.dob || "")}
-                    </TableCell>
-                    <TableCell>
-                      {customer.formData?.personalData?.email || ""}
-                    </TableCell>
-                    <TableCell align="center">
-                      {customer.formData?.editedByCustomer ? (
-                        <CheckCircleIcon color="success" />
-                      ) : (
-                        <CancelIcon color="error" />
-                      )}
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Link kopieren">
-                        <IconButton
-                          color="primary"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopyLink(customer.customerId);
-                          }}
-                          size="small"
-                          sx={{ mr: 1 }}
-                        >
-                          <ContentCopyIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="E-Mail senden">
-                        <IconButton
-                          color="primary"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMailTo(
-                              customer.formData?.personalData?.email || "",
-                              customer.customerId
-                            );
-                          }}
-                          size="small"
-                          sx={{ mr: 1 }}
-                        >
-                          <EmailIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <HoldDeleteButton
-                        onDelete={() => handleDelete(customer.customerId)}
-                        size="small"
-                      />
-                    </TableCell>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <motion.div
-          layout
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          variants={paginationVariants}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 30,
-          }}
-          className="flex justify-end items-center text-sm text-gray-600"
-        >
-          <Box className="flex justify-between items-center gap-4">
-            <Typography variant="body2" className="text-gray-600">
-              Zeige{" "}
-              {sortedCustomers.length > 0 ? (page - 1) * rowsPerPage + 1 : 0}-
-              {Math.min(page * rowsPerPage, sortedCustomers.length)} von{" "}
-              {sortedCustomers.length} Einträgen
-            </Typography>
-            <Pagination
-              className="align-end"
-              count={totalPages}
-              page={page}
-              onChange={handlePageChange}
-              color="primary"
-              shape="rounded"
-              showFirstButton
-              showLastButton
-            />
+        {isLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+            <CircularProgress />
           </Box>
-        </motion.div>
+        ) : error ? (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        ) : (
+          <>
+            <TableContainer component={Paper} className="mb-6 shadow-sm">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>
+                      <TableSortLabel
+                        active={sortField === "lastName"}
+                        direction={sortField === "lastName" ? sortOrder : "asc"}
+                        onClick={() => handleSort("lastName")}
+                      >
+                        Nachname
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell>
+                      <TableSortLabel
+                        active={sortField === "firstName"}
+                        direction={
+                          sortField === "firstName" ? sortOrder : "asc"
+                        }
+                        onClick={() => handleSort("firstName")}
+                      >
+                        Vorname
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell>
+                      <TableSortLabel
+                        active={sortField === "dob"}
+                        direction={sortField === "dob" ? sortOrder : "asc"}
+                        onClick={() => handleSort("dob")}
+                      >
+                        Geburtsdatum
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell>
+                      <TableSortLabel
+                        active={sortField === "email"}
+                        direction={sortField === "email" ? sortOrder : "asc"}
+                        onClick={() => handleSort("email")}
+                      >
+                        Email
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: "120px" }}>
+                      Bearbeitet
+                    </TableCell>
+                    <TableCell align="right">Aktionen</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <AnimatePresence mode="wait">
+                    {paginatedCustomers.map((customer, index) => (
+                      <motion.tr
+                        key={customer.customerId}
+                        onClick={() =>
+                          navigate(`/kundedaten/${customer.customerId}`)
+                        }
+                        style={{
+                          cursor: "pointer",
+                          backgroundColor:
+                            index % 2 === 1
+                              ? "rgba(0, 0, 0, 0.04)"
+                              : "transparent",
+                        }}
+                        variants={tableRowVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        transition={{
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 20,
+                          mass: 0.5,
+                        }}
+                        layout
+                      >
+                        <TableCell>
+                          {customer.formData?.personalData?.lastName || ""}
+                        </TableCell>
+                        <TableCell>
+                          {customer.formData?.personalData?.firstName || ""}
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(customer.formData?.driverInfo?.dob || "")}
+                        </TableCell>
+                        <TableCell>
+                          {customer.formData?.personalData?.email || ""}
+                        </TableCell>
+                        <TableCell align="center">
+                          {customer.formData?.editedByCustomer ? (
+                            <CheckCircleIcon color="success" />
+                          ) : (
+                            <CancelIcon color="error" />
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Tooltip title="Link kopieren">
+                            <IconButton
+                              color="primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyLink(customer.customerId);
+                              }}
+                              size="small"
+                              sx={{ mr: 1 }}
+                            >
+                              <ContentCopyIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="E-Mail senden">
+                            <IconButton
+                              color="primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMailTo(
+                                  customer.formData?.personalData?.email || "",
+                                  customer.customerId
+                                );
+                              }}
+                              size="small"
+                              sx={{ mr: 1 }}
+                            >
+                              <EmailIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <HoldDeleteButton
+                            onDelete={() => handleDelete(customer.customerId)}
+                            size="small"
+                          />
+                        </TableCell>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <motion.div
+              layout
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={paginationVariants}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
+              className="flex justify-end items-center text-sm text-gray-600"
+            >
+              <Box className="flex justify-between items-center gap-4">
+                <Typography variant="body2" className="text-gray-600">
+                  Zeige{" "}
+                  {sortedCustomers.length > 0
+                    ? (page - 1) * rowsPerPage + 1
+                    : 0}
+                  -{Math.min(page * rowsPerPage, sortedCustomers.length)} von{" "}
+                  {sortedCustomers.length} Einträgen
+                </Typography>
+                <Pagination
+                  className="align-end"
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                  shape="rounded"
+                  showFirstButton
+                  showLastButton
+                />
+              </Box>
+            </motion.div>
+
+            <Box
+              component={Paper}
+              sx={{
+                mt: 4,
+                borderRadius: 2,
+                overflow: "hidden",
+                boxShadow: 1,
+                width: "100%",
+                p: 4,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Box
+                sx={{
+                  width: 300,
+                  height: 300,
+                }}
+              >
+                <DancingOwl />
+              </Box>
+            </Box>
+          </>
+        )}
       </Box>
     </LayoutGroup>
   );

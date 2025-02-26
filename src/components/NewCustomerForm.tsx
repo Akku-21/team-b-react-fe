@@ -79,6 +79,7 @@ const initialFormData: CustomerFormData = {
     houseNumber: "",
     postalCode: "",
     city: "",
+    phoneNumber: "",
   },
   paymentInfo: {
     iban: "",
@@ -208,6 +209,13 @@ export default function NewCustomerForm({
       newErrors.city = "Bitte geben Sie einen gültigen Ort ein";
     }
 
+    // Add phone number validation
+    if (!formData.personalData.phoneNumber) {
+      newErrors.phoneNumber = "Telefonnummer ist erforderlich";
+    } else if (!isValidPhoneNumber(formData.personalData.phoneNumber)) {
+      newErrors.phoneNumber = "Ungültige Telefonnummer";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -301,6 +309,14 @@ export default function NewCustomerForm({
     return date.format("YYYY-MM-DD");
   };
 
+  // Add a helper function to validate phone numbers
+  const isValidPhoneNumber = (phoneNumber: string): boolean => {
+    // Basic validation for German phone numbers
+    // Accepts formats like: +49 123 456789, 0123 456789, etc.
+    const phoneRegex = /^(\+[0-9]{1,3}|0)[0-9]{3,}$/;
+    return phoneRegex.test(phoneNumber.replace(/\s/g, ""));
+  };
+
   const formContent = (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
       {alreadyEditedByCustomer && (
@@ -324,6 +340,8 @@ export default function NewCustomerForm({
             onChange={(e) =>
               handleChange("personalData", "firstName", e.target.value)
             }
+            error={!!errors.firstName}
+            helperText={errors.firstName}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -406,6 +424,21 @@ export default function NewCustomerForm({
             }
             error={!!errors.email}
             helperText={errors.email}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Telefonnummer"
+            value={formData.personalData.phoneNumber}
+            onChange={(e) =>
+              handleChange("personalData", "phoneNumber", e.target.value)
+            }
+            error={!!errors.phoneNumber}
+            helperText={
+              errors.phoneNumber || "Format: +49 123 4567890 oder 0123 4567890"
+            }
+            placeholder="+49 123 4567890"
           />
         </Grid>
       </Grid>

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, devtools } from 'zustand/middleware';
 
 interface User {
   id: string;
@@ -26,46 +26,49 @@ const MOCK_USERS = [
 ];
 
 export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      token: null,
-      isAuthenticated: false,
+  devtools(
+    persist(
+      (set) => ({
+        user: null,
+        token: null,
+        isAuthenticated: false,
 
-      login: async (email: string, password: string) => {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        login: async (email: string, password: string) => {
+          // Simulate API call delay
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const user = MOCK_USERS.find(u => u.email === email && u.password === password);
-        
-        if (!user) {
-          throw new Error('Invalid credentials');
+          const user = MOCK_USERS.find(u => u.email === email && u.password === password);
+          
+          if (!user) {
+            throw new Error('Invalid credentials');
+          }
+
+          const token = `mock-jwt-token-${Math.random()}`;
+          
+          set({
+            user: { id: user.id, email: user.email, name: user.name },
+            token,
+            isAuthenticated: true
+          }, false, 'auth/login');
+        },
+
+        logout: () => {
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false
+          }, false, 'auth/logout');
         }
-
-        const token = `mock-jwt-token-${Math.random()}`;
-        
-        set({
-          user: { id: user.id, email: user.email, name: user.name },
-          token,
-          isAuthenticated: true
-        });
-      },
-
-      logout: () => {
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false
-        });
+      }),
+      {
+        name: 'auth-storage',
+        partialize: (state) => ({ 
+          user: state.user,
+          token: state.token,
+          isAuthenticated: state.isAuthenticated
+        })
       }
-    }),
-    {
-      name: 'auth-storage',
-      partialize: (state) => ({ 
-        user: state.user,
-        token: state.token,
-        isAuthenticated: state.isAuthenticated
-      })
-    }
+    ),
+    { name: 'auth-store' }
   )
 ); 
